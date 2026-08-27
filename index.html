@@ -1,0 +1,3777 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MultiNote</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      background: #0d0d12;
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, sans-serif;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 0;
+      margin: 0;
+      color: #f0f0f4;
+      transition: background .35s ease, color .35s ease;
+      overflow: hidden;
+    }
+    :root {
+      --bg-body: #0d0d12;
+      --bg-app: #16161e;
+      --bg-header: #1a1a24;
+      --bg-sidebar: #1a1a24;
+      --bg-editor: #16161e;
+      --bg-input: rgba(255, 255, 255, .03);
+      --bg-hover: rgba(255, 255, 255, .04);
+      --bg-active: rgba(255, 255, 255, .08);
+      --bg-dropdown: #252536;
+      --bg-toolbar: rgba(255, 255, 255, .02);
+      --bg-content: rgba(255, 255, 255, .02);
+      --bg-wrapper: rgba(255, 255, 255, .02);  /* Add this */
+      --text-primary: #f0f0f4;
+      --text-secondary: #d0d0d8;
+      --text-muted: #b0b0c0;
+      --text-dim: #5a5a6a;
+      --border-subtle: rgba(255, 255, 255, .04);
+      --border-soft: rgba(255, 255, 255, .06);
+      --border-medium: rgba(255, 255, 255, .1);
+      --shadow-card: 0 25px 60px rgba(0, 0, 0, .8);
+      --shadow-dropdown: 0 12px 40px rgba(0, 0, 0, .8);
+      --accent-save: #6aaa6a;
+      --accent-danger: #d06060;
+      --accent-danger-hover: #f07070;
+      --transition-speed: .3s;
+      --sidebar-width: 280px;
+      --editor-min-height: 600px;
+    }
+    [data-theme="light"] {
+      --bg-body: #e8ddd0;
+      --bg-app: #f5efe6;
+      --bg-header: #e8ddd0;
+      --bg-sidebar: #ede4d8;
+      --bg-editor: #f5efe6;
+      --bg-input: #f0e8dd;
+      --bg-wrapper: #f8f2e8;
+      --bg-hover: rgba(139, 115, 85, .13);
+      --bg-active: rgba(139, 115, 85, .22);
+      --bg-dropdown: #ede4d8;
+      --bg-toolbar: #ede4d8;
+      --bg-content: #f8f2e8;
+      --text-primary: #1a120a;
+      --text-secondary: #3d2e1f;
+      --text-muted: #7a654f;
+      --text-dim: #b8a392;
+      --border-subtle: rgba(139, 115, 85, .2);
+      --border-soft: rgba(139, 115, 85, .35);
+      --border-medium: rgba(139, 115, 85, .5);
+      --shadow-card: 0 25px 60px rgba(80, 60, 40, .18);
+      --shadow-dropdown: 0 12px 40px rgba(80, 60, 40, .25);
+      --accent-save: #4a8a4a;
+      --accent-danger: #b84a4a;
+      --accent-danger-hover: #a03838;
+    }
+    .app {
+      width: 100vw;
+      height: 100vh;
+      max-height: 100vh;
+      background: var(--bg-app);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      border-radius: 0;
+      box-shadow: none;
+      position: relative;
+      transition: background .35s ease, border-color .35s ease;
+    }
+    .app-header {
+      padding: 16px 28px;
+      border-bottom: 1px solid var(--border-soft);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-shrink: 0;
+      background: var(--bg-header);
+      min-height: 72px;
+      transition: background .35s ease, border-color .35s ease;
+    }
+    .app-header .brand {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+    .app-header .brand .logo {
+      font-weight: 700;
+      font-size: 1.8rem;
+      letter-spacing: -.5px;
+      color: var(--text-primary);
+      background: linear-gradient(135deg, var(--text-primary) 0%, var(--text-muted) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      transition: color .35s ease;
+    }
+    .app-header .brand .logo span {
+      -webkit-text-fill-color: var(--text-muted);
+      font-weight: 300;
+    }
+    .app-header .brand .badge {
+      font-size: .7rem;
+      font-weight: 600;
+      background: var(--bg-active);
+      color: var(--text-muted);
+      padding: 4px 14px;
+      border-radius: 40px;
+      letter-spacing: .4px;
+      text-transform: uppercase;
+      border: 1px solid var(--border-soft);
+      transition: background .35s ease, color .35s ease, border-color .35s ease;
+    }
+    .header-actions {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+    .theme-toggle {
+      background: var(--bg-hover);
+      border: 1px solid var(--border-soft);
+      border-radius: 30px;
+      padding: 6px 14px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--text-muted);
+      font-size: .95rem;
+      font-weight: 500;
+      font-family: inherit;
+      transition: all .35s ease;
+      min-height: 38px;
+    }
+    .theme-toggle:hover {
+      background: var(--bg-active);
+      border-color: var(--border-medium);
+    }
+    .theme-toggle .icon.sun {
+      display: none;
+    }
+    .theme-toggle .icon.moon {
+      display: flex;
+    }
+    [data-theme="light"] .theme-toggle .icon.sun {
+      display: flex;
+    }
+    [data-theme="light"] .theme-toggle {
+  background: var(--bg-input);
+  border-color: rgba(139, 115, 85, .25);
+  color: #3d2e1f;
+}
+    [data-theme="light"] .theme-toggle .icon.moon {
+      display: none;
+    }
+    .theme-toggle .label {
+      font-size: .8rem;
+      font-weight: 500;
+      transition: color .35s ease;
+    }
+    .status-save {
+  font-size: .9rem;
+  padding: 6px 16px;
+  border-radius: 30px;
+  font-weight: 600;
+  border: 1px solid transparent;
+  transition: all .35s ease;
+  min-width: 80px;
+  text-align: center;
+  min-height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+html:not([data-theme="light"]) .status-save.saved,
+:root:not([data-theme="light"]) .status-save.saved,
+.status-save.saved {
+  color: var(--accent-save);
+  background: rgba(74, 138, 74, .12);
+  border: 1px solid rgba(74, 138, 74, .25) !important;
+}
+    .status-save.saving {
+      color: #d4a017;
+      border-color: rgba(212, 160, 23, .3);
+      background: rgba(212, 160, 23, .08);
+    }
+    .status-save.error {
+      color: var(--accent-danger);
+      border-color: rgba(184, 74, 74, .3);
+      background: rgba(184, 74, 74, .1);
+    }
+    [data-theme="light"] .status-save.saved {
+      background: rgba(74, 138, 74, .12);
+      border-color: rgba(74, 138, 74, .25);
+      color: #3a7a3a;
+    }
+    [data-theme="light"] .status-save {
+      background: rgba(139, 115, 85, .08);
+      border-color: rgba(139, 115, 85, .2);
+      color: #3d2e1f;
+    }
+    .header-btn {
+      background: var(--bg-hover);
+      border: 1px solid var(--border-soft);
+      border-radius: 30px;
+      padding: 6px 18px;
+      font-size: .9rem;
+      cursor: pointer;
+      color: var(--text-muted);
+      font-weight: 500;
+      font-family: inherit;
+      transition: all .35s ease;
+      min-height: 38px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    [data-theme="light"] .header-btn {
+      background: var(--bg-input);
+      border-color: rgba(139, 115, 85, .25);
+      color: #3d2e1f;
+    }
+    .header-btn:hover {
+      background: var(--bg-active);
+      border-color: var(--border-medium);
+      color: var(--text-primary);
+      transform: translateY(-1px);
+    }
+    .header-btn.danger:hover {
+      background: rgba(184, 74, 74, .12);
+      border-color: rgba(184, 74, 74, .3);
+      color: var(--accent-danger-hover);
+    }
+    .main-area {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  background: var(--bg-app);
+  position: relative;
+  overflow: hidden;
+  transition: background .35s ease;
+}
+
+.manager {
+  width: var(--sidebar-width);
+  background: var(--bg-sidebar);
+  padding: 16px 18px;
+  border-right: 1px solid var(--border-soft);
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  box-sizing: border-box;
+  position: relative;
+  z-index: 10;
+  
+  /* Smooth hardware-accelerated collapse */
+  transition: transform var(--transition-speed) cubic-bezier(0.4, 0, 0.2, 1),
+              margin-left var(--transition-speed) cubic-bezier(0.4, 0, 0.2, 1),
+              background .35s ease, 
+              border-color .35s ease;
+  will-change: transform, margin-left;
+}
+
+/* Slide sidebar smoothly out without causing child wrapping artifacts */
+.manager.closed {
+  margin-left: calc(-1 * var(--sidebar-width));
+}
+
+.manager > * {
+  transition: opacity calc(var(--transition-speed) * 0.6) ease;
+  opacity: 1;
+  white-space: nowrap;
+}
+
+/* Remove display: none to prevent abrupt layout breaking mid-animation */
+.manager.closed > * {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.sidebar-toggle-btn {
+  position: absolute;
+  left: var(--sidebar-width);
+  top: 50%;
+  transform: translateY(-50%);
+  width: 26px;
+  height: 60px;
+  background: var(--bg-sidebar);
+  border: 1px solid var(--border-soft);
+  border-left: none;
+  border-radius: 0 8px 8px 0;
+  cursor: pointer;
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+  transition: left var(--transition-speed) cubic-bezier(0.4, 0, 0.2, 1), 
+              width var(--transition-speed) ease, 
+              background .35s ease, 
+              border-color .35s ease;
+  z-index: 999;
+  color: var(--text-muted);
+  font-size: .9rem;
+  font-weight: bold;
+  padding: 0;
+  box-shadow: 2px 0 12px rgba(0, 0, 0, .15);
+}
+
+    .sidebar-toggle-btn:hover {
+      background: var(--bg-active);
+      width: 30px;
+      color: var(--text-primary);
+    }
+    .manager.closed~.sidebar-toggle-btn {
+      left: 0;
+    }
+    .create-btn-container {
+      margin-bottom: 12px;
+      display: flex;
+    }
+    .create-btn {
+      height: 36px;
+      padding: 22px 28px;
+      background: var(--bg-active);
+      color: var(--text-primary);
+      border: 1px solid var(--border-medium);
+      border-radius: 8px;
+      font-size: .88rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-family: inherit;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, .12);
+      transition: all .2s ease;
+    }
+    .create-btn:hover {
+      background: var(--bg-hover);
+      border-color: var(--text-muted);
+      transform: translateY(-1px);
+    }
+    .create-dropdown {
+      position: relative;
+    }
+    .create-dropdown-content {
+      display: none;
+      position: absolute;
+      background: var(--bg-dropdown);
+      min-width: 180px;
+      box-shadow: var(--shadow-dropdown);
+      border-radius: 12px;
+      padding: 6px 0;
+      z-index: 1000;
+      left: 0;
+      top: calc(100% + 6px);
+      border: 1px solid var(--border-soft);
+      transition: background .35s ease, border-color .35s ease;
+    }
+    .create-dropdown-content.show {
+      display: block;
+      animation: fade .15s ease;
+    }
+    @keyframes fade {
+      from {
+        opacity: 0;
+        transform: translateY(-6px) scale(.98);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+    }
+    .create-dropdown-content button {
+      width: 100%;
+      padding: 10px 18px;
+      border: none;
+      background: transparent;
+      text-align: left;
+      font-size: .85rem;
+      cursor: pointer;
+      color: var(--text-secondary);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-family: inherit;
+      transition: all .15s ease;
+      align-items: center;
+    }
+    .create-dropdown-content button:hover {
+      background: var(--bg-hover);
+      color: var(--text-primary);
+    }
+    .create-dropdown-content button .icon {
+  font-size: 1rem;
+  opacity: .5;
+  display: inline-flex; /* Normalizes the SVG icon line-height */
+  align-items: center;
+  justify-content: center;
+  width: 20px; /* Provides a uniform width for consistent text alignment */
+  flex-shrink: 0;
+}
+
+.create-dropdown-content button .icon svg {
+  display: block; /* Prevents unwanted baseline spacing under SVGs */
+}
+    .search-box {
+      padding: 8px 14px;
+      border-radius: 20px;
+      border: 1px solid var(--border-subtle);
+      background: var(--bg-input);
+      font-size: .82rem;
+      outline: none;
+      width: 100%;
+      margin-bottom: 14px;
+      font-family: inherit;
+      color: var(--text-primary);
+      transition: all .25s ease;
+      min-height: 34px;
+    }
+    .search-box::placeholder {
+      color: var(--text-dim);
+    }
+    .search-box:focus {
+      border-color: var(--border-medium);
+      background: var(--bg-hover);
+      box-shadow: 0 0 0 2px var(--border-subtle);
+    }
+    [data-theme="light"] .search-box {
+      background: var(--bg-input);
+      border-color: rgba(139, 115, 85, .25);
+      color: #1a120a;
+    }
+    [data-theme="light"] .search-box::placeholder {
+      color: #b8a392;
+    }
+    [data-theme="light"] .search-box:focus {
+      background: var(--bg-input);
+      border-color: rgba(139, 115, 85, .5);
+      box-shadow: 0 0 0 3px rgba(139, 115, 85, .08);
+    }
+    .tree-container {
+      flex: 1;
+      overflow-y: auto;
+      overflow-x: visible;
+      padding-right: 4px;
+      display: flex;
+      flex-direction: column;
+    }
+    .tree-container::-webkit-scrollbar {
+      width: 4px;
+    }
+    .tree-container::-webkit-scrollbar-thumb {
+      background: var(--border-soft);
+      border-radius: 20px;
+      transition: background .35s ease;
+    }
+    .section-header {
+      font-size: .65rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: .8px;
+      color: var(--text-muted);
+      padding: 10px 4px 6px 4px;
+      border-bottom: 1px solid var(--border-soft);
+      margin: 4px 0 6px 0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      transition: color .35s ease, border-color .35s ease;
+    }
+    
+    .section-header.notes-header {
+      margin-top: 24px;
+    }
+
+    .section-header .count {
+      font-weight: 400;
+      color: var(--text-dim);
+      font-size: .55rem;
+      background: var(--bg-hover);
+      padding: 0 8px;
+      border-radius: 40px;
+      transition: color .35s ease, background .35s ease;
+    }
+
+    .folder-item,
+    .note-item {
+      position: relative;
+      z-index: 1;
+    }
+
+    /* Only elevate z-index on hover if NO item dropdown menu is active */
+    #treeContainer:not(:has(.item-dropdown-menu.show)) .folder-item:hover,
+    #treeContainer:not(:has(.item-dropdown-menu.show)) .note-item:hover {
+      z-index: 10 !important;
+    }
+
+    /* Keep the item that owns the active dropdown at maximum z-index */
+    .folder-item:has(.item-dropdown-menu.show),
+    .note-item:has(.item-dropdown-menu.show) {
+      z-index: 10000 !important;
+    }
+    .folder-item, .note-item {
+      position: relative;
+      margin-bottom: 2px;
+      cursor: grab;
+      border-radius: 8px;
+      overflow: visible;
+      transition: background-color .15s ease, border-color .15s ease;
+      border: 1px solid transparent;
+    }
+    .folder-item.drag-over-folder {
+      background: var(--bg-active) !important;
+      border-color: var(--border-medium) !important;
+      border-radius: 8px;
+    }
+    .folder-item.drag-over-folder > .folder-header {
+      color: var(--text-primary) !important;
+    }
+    .folder-item:active, .note-item:active {
+      cursor: grabbing;
+    }
+    .folder-item.dragging, .note-item.dragging {
+      opacity: .3;
+    }
+
+    .folder-item.drop-above::before,
+    .note-item.drop-above::before {
+      content: '';
+      position: absolute;
+      top: -2px;
+      left: 8px;
+      right: 16px;
+      height: 2px;
+      background: rgba(255, 255, 255, 0.7);
+      border-radius: 2px;
+      z-index: 10;
+    }
+    .folder-item.drop-below::after,
+    .note-item.drop-below::after {
+      content: '';
+      position: absolute;
+      bottom: -2px;
+      left: 8px;
+      right: 16px;
+      height: 2px;
+      background: rgba(255, 255, 255, 0.7);
+      border-radius: 2px;
+      z-index: 10;
+    }
+    [data-theme="light"] .folder-item.drop-above::before,
+    [data-theme="light"] .note-item.drop-above::before,
+    [data-theme="light"] .folder-item.drop-below::after,
+    [data-theme="light"] .note-item.drop-below::after {
+      background: rgba(80, 60, 40, 0.7);
+    }
+
+    .folder-header {
+      display: flex;
+      align-items: center;
+      padding: 6px 10px;
+      border-radius: 8px;
+      cursor: pointer;
+      width: 100%;
+      background: transparent;
+      border: 1px solid transparent;
+      font-size: .85rem;
+      color: var(--text-secondary);
+      font-weight: 450;
+      gap: 6px;
+      text-align: left;
+      font-family: inherit;
+      position: relative;
+      transition: all .15s ease, color .35s ease, background .35s ease;
+    }
+    .folder-header:hover {
+      background: var(--bg-hover);
+    }
+    .folder-header .folder-toggle {
+      font-size: 1.15rem;
+      font-weight: bold;
+      color: var(--text-secondary);
+      width: 18px;
+      line-height: 1;
+      text-align: center;
+      flex-shrink: 0;
+      transition: transform .2s ease, color .35s ease;
+      display: inline-block;
+    }
+    .folder-header .folder-name {
+      flex: 1;
+      text-align: left;
+      font-weight: 450;
+    }
+    .folder-header .folder-count {
+      font-size: .6rem;
+      color: var(--text-dim);
+      background: var(--bg-hover);
+      padding: 0 8px;
+      border-radius: 40px;
+      font-weight: 400;
+      border: 1px solid var(--border-subtle);
+      transition: color .35s ease, background .35s ease, border-color .35s ease;
+    }
+    .folder-header .folder-menu {
+      opacity: 0;
+      transition: opacity .2s ease;
+      display: flex;
+      gap: 2px;
+      position: relative;
+    }
+    .folder-header:hover .folder-menu,
+    .folder-header .folder-menu:has(.item-dropdown-menu.show) {
+      opacity: 1;
+    }
+    .folder-header .folder-menu .dots-btn {
+      background: transparent;
+      border: none;
+      font-size: .8rem;
+      cursor: pointer;
+      padding: 2px 6px;
+      border-radius: 6px;
+      color: var(--text-dim);
+      line-height: 1;
+      transition: .15s ease, color .35s ease;
+    }
+    .folder-header .folder-menu .dots-btn:hover {
+      background: var(--bg-hover);
+      color: var(--text-muted);
+    }
+    .folder-children {
+      padding-left: 18px;
+      overflow: visible;
+      display: none;
+    }
+    .folder-children.open {
+      display: block;
+    }
+    .note-item {
+      display: flex;
+      align-items: center;
+      padding: 5px 8px 5px 10px;
+      margin: 1px 0;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: .82rem;
+      color: var(--text-muted);
+      gap: 4px;
+      background: transparent;
+      border: 1px solid transparent;
+      transition: all .15s ease, color .35s ease, background .35s ease, border-color .35s ease;
+      overflow: visible;
+    }
+    .note-item:hover {
+      background: var(--bg-hover);
+      color: var(--text-secondary);
+      transform: translateX(2px);
+    }
+    .note-item.active {
+      background: var(--bg-active);
+      color: var(--text-primary);
+      font-weight: 500;
+      border-color: var(--border-soft);
+    }
+
+
+    .note-item .note-title-text {
+      flex: 1;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .note-item .note-time {
+      font-size: .55rem;
+      color: var(--text-dim);
+      flex-shrink: 0;
+      margin-left: 4px;
+      font-weight: 400;
+    }
+    .note-item .note-menu {
+      opacity: 0;
+      transition: opacity .2s ease;
+      display: flex;
+      gap: 2px;
+      position: relative;
+    }
+    .note-item:hover .note-menu,
+    .note-item .note-menu:has(.item-dropdown-menu.show) {
+      opacity: 1;
+    }
+    .note-item .note-menu .dots-btn {
+      background: transparent;
+      border: none;
+      font-size: .8rem;
+      cursor: pointer;
+      padding: 2px 6px;
+      border-radius: 6px;
+      color: var(--text-dim);
+      line-height: 1;
+      transition: .15s ease, color .35s ease;
+    }
+    .note-item .note-menu .dots-btn:hover {
+      background: var(--bg-hover);
+      color: var(--text-muted);
+    }
+    #noteList {
+      flex: 1;
+      min-height: 120px;
+      border-radius: 8px;
+      padding: 4px;
+      border: 1px solid transparent;
+      transition: background-color 0.15s ease, border-color 0.15s ease;
+    }
+    #noteList.drag-over-section {
+      background: var(--bg-active) !important;
+      border-color: var(--border-medium) !important;
+    }
+    
+    .item-dropdown-menu {
+  display: none;
+  position: absolute;
+  right: 0;
+  top: 100%;
+  background-color: var(--bg-dropdown) !important;
+  min-width: 130px; /* Use min-width instead of fixed width */
+  width: max-content; /* Automatically fits the longest text item */
+  box-shadow: var(--shadow-dropdown);
+  border-radius: 8px;
+  padding: 4px 0;
+  z-index: 9999;
+  border: 1px solid var(--border-medium);
+  opacity: 1 !important;
+  pointer-events: auto;
+  isolation: isolate;
+  flex-direction: column; /* Force items (Rename, Duplicate, Delete) to stack vertically */
+  overflow: hidden; /* Fixes hover highlights overflowing curved corners */
+  background-color: var(--bg-dropdown) !important;
+  opacity: 1 !important;
+  -webkit-backdrop-filter: blur(0px); /* Forces solid browser layer composition */
+  backdrop-filter: blur(0px);
+}
+.item-dropdown-menu.show {
+  display: flex !important; /* Stack menu items in a clean vertical column */
+  flex-direction: column;
+  background-color: var(--bg-dropdown) !important;
+  opacity: 1 !important;
+  animation: fade .15s ease;
+}
+.item-dropdown-menu button {
+  width: 100%;
+  padding: 8px 12px;
+  border: none;
+  background: transparent;
+  text-align: left;
+  font-size: .8rem;
+  cursor: pointer;
+  color: var(--text-secondary);
+  font-family: inherit;
+  transition: background .15s ease, color .15s ease;
+  white-space: nowrap;
+  border-radius: 0; /* Ensures full-width rectangular highlight inside the rounded menu */
+}
+    .item-dropdown-menu button:hover {
+      background-color: var(--bg-hover) !important;
+      color: var(--text-primary);
+    }
+    .item-dropdown-menu button.danger {
+      color: var(--accent-danger);
+    }
+    .item-dropdown-menu button.danger:hover {
+      background-color: rgba(184, 74, 74, .12) !important;
+      color: var(--accent-danger-hover);
+    }
+    .empty-message {
+      padding: 12px 14px;
+      color: var(--text-dim);
+      font-size: .78rem;
+      text-align: center;
+      font-style: italic;
+      transition: color .35s ease;
+    }
+/* Optimized Editor Layout and Transitions */
+.editor {
+  height: 100%;
+  overflow-y: auto;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 14px 28px 12px 38px;
+  min-width: 0;
+  background: var(--bg-editor);
+  position: relative;
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  
+  /* Synchronize transition properties with the sidebar curve and speed */
+  transition: max-width var(--transition-speed) cubic-bezier(0.4, 0, 0.2, 1),
+              padding var(--transition-speed) cubic-bezier(0.4, 0, 0.2, 1), 
+              margin var(--transition-speed) cubic-bezier(0.4, 0, 0.2, 1),
+              flex var(--transition-speed) cubic-bezier(0.4, 0, 0.2, 1),
+              background .35s ease;
+  will-change: max-width, padding, margin;
+}
+/* Keeps layout steady during open and close transitions */
+.manager.closed ~ .editor {
+  max-width: 1200px;
+  margin: 0 auto;
+} 
+/* Nested ordered list items switch to bullets when indented */
+ol ol, ul ol, ol ul {
+  list-style-type: disc !important;
+}
+.editor-top {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 10px;
+      flex-shrink: 0;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      background: var(--bg-editor);
+      transition: background .35s ease, color .35s ease;
+    }
+    .editor-top .title-area {
+      display: flex;
+      align-items: center;
+      flex: 1;
+      gap: 10px;
+      flex-wrap: wrap;
+      min-width: 0;
+    }
+    .editor-top .note-title-input {
+      flex: 0 1 auto;
+      border: none;
+      font-size: 1.6rem;
+      font-weight: 600;
+      padding: 2px 4px 8px 4px;
+      border-bottom: 2px solid var(--border-soft);
+      background: transparent;
+      outline: none;
+      color: var(--text-primary);
+      min-width: 150px;
+      font-family: inherit;
+      transition: all .35s ease;
+    }
+    .editor-top .note-title-input:focus {
+      border-bottom-color: var(--border-medium);
+    }
+    .editor-top .note-title-input::placeholder {
+      color: var(--text-dim);
+    }
+    .editor-top .note-modified {
+      font-size: .7rem;
+      color: var(--text-muted);
+      flex-shrink: 0;
+      padding-bottom: 6px;
+      font-weight: 500;
+      white-space: nowrap;
+      margin-left: auto;
+      padding-left: 12px;
+      display: flex;
+      align-items: center;
+    }
+
+    
+    .format-toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      align-items: center;
+      padding: 5px 8px;
+      background: var(--bg-toolbar);
+      border-radius: 12px;
+      margin-bottom: 12px;
+      flex-shrink: 0;
+      border: 1px solid var(--border-soft);
+      transition: background .35s ease, border-color .35s ease;
+    }
+
+    .format-toolbar .toolbar-group {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .format-toolbar .sep {
+      width: 1px;
+      height: 20px;
+      background: var(--border-medium);
+      margin: 0 4px;
+      transition: background .35s ease;
+    }
+
+    .format-toolbar .toolbar-left {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 2px;
+      align-items: center;
+      flex: 1;
+    }
+
+    .format-toolbar .toolbar-right {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding-left: 8px;
+      border-left: 1px solid var(--border-medium);
+      transition: border-color .35s ease;
+      min-height: 32px;
+    }
+
+    .format-toolbar .counter {
+      display: flex;
+      gap: 10px;
+      font-size: .7rem;
+      color: var(--text-muted);
+      font-weight: 500;
+      transition: color .35s ease;
+      align-items: center;
+    }
+    .format-toolbar .counter .sep-line {
+      width: 1px;
+      height: 24px;
+      background: var(--border-soft);
+      margin: 0 4px;
+    }
+    .format-toolbar .counter span {
+      display: flex;
+      align-items: center;
+      gap: 3px;
+    }
+    .format-toolbar .counter .word-count,
+    .format-toolbar .counter .char-count {
+      font-weight: 600;
+      color: var(--text-muted);
+      font-size: .9rem;
+      min-width: 28px;
+      display: inline-block;
+      transition: color .35s ease;
+    }
+    .format-toolbar .counter .label {
+      color: var(--text-dim);
+      font-weight: 400;
+      font-size: .55rem;
+      text-transform: uppercase;
+      letter-spacing: .3px;
+      transition: color .35s ease;
+    }
+    [data-theme="light"] .format-toolbar .counter .word-count,
+    [data-theme="light"] .format-toolbar .counter .char-count {
+      color: #3d2e1f;
+    }
+
+    .format-toolbar button {
+      background: transparent;
+      border: 1px solid transparent;
+      border-radius: 6px;
+      padding: 0 6px;
+      font-size: .8rem;
+      cursor: pointer;
+      color: var(--text-secondary);
+      font-weight: 500;
+      min-width: 28px;
+      height: 28px;
+      font-family: inherit;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: all .15s ease;
+    }
+    .format-toolbar button:hover {
+      background: var(--bg-hover);
+      border-color: var(--border-soft);
+      color: var(--text-primary);
+    }
+    .format-toolbar button.active {
+      background: var(--bg-active);
+      border-color: var(--border-medium);
+      color: var(--text-primary);
+      font-weight: 600;
+    }
+
+    .format-toolbar select {
+      padding: 2px 8px;
+      border-radius: 6px;
+      border: 1px solid var(--border-soft);
+      font-size: .75rem;
+      background: var(--bg-input);
+      cursor: pointer;
+      height: 28px;
+      font-family: inherit;
+      color: var(--text-secondary);
+      transition: all .35s ease;
+    }
+    .format-toolbar select:focus {
+      outline: none;
+      border-color: var(--border-medium);
+    }
+    .format-toolbar select option {
+      background: var(--bg-dropdown);
+      color: var(--text-primary);
+    }
+
+    #fontFamilySelect {
+      min-width: 95px;
+    }
+
+    .color-dropdown, .align-dropdown, .list-dropdown {
+      position: relative;
+      display: inline-block;
+    }
+
+    .color-dropdown-btn, .align-dropdown-btn, .list-dropdown-btn {
+      background: transparent;
+      border: 1px solid transparent;
+      border-radius: 6px;
+      padding: 0 6px;
+      font-size: .8rem;
+      cursor: pointer;
+      color: var(--text-secondary);
+      min-width: 28px;
+      height: 28px;
+      font-family: inherit;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      transition: all .15s ease;
+    }
+    .color-dropdown-btn:hover, .align-dropdown-btn:hover, .list-dropdown-btn:hover {
+      background: var(--bg-hover);
+      border-color: var(--border-soft);
+      color: var(--text-primary);
+    }
+
+    .gdoc-color-icon {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      font-family: "Georgia", serif;
+      font-weight: bold;
+      font-size: 1rem;
+      line-height: 1;
+    }
+    .gdoc-color-bar {
+      width: 14px;
+      height: 3px;
+      border-radius: 1px;
+      background-color: var(--text-primary);
+      margin-top: 1px;
+    }
+    .gdoc-highlight-icon {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      font-size: .9rem;
+      line-height: 1;
+    }
+    .gdoc-highlight-bar {
+      width: 14px;
+      height: 3.5px;
+      border-radius: 1px;
+      background-color: #feca57;
+      margin-top: 1px;
+    }
+
+    .color-dropdown-content {
+      display: none;
+      position: absolute;
+      background: var(--bg-dropdown);
+      box-shadow: var(--shadow-dropdown);
+      border-radius: 12px;
+      padding: 10px;
+      z-index: 1000;
+      border: 1px solid var(--border-soft);
+      transition: background .35s ease, border-color .35s ease;
+      flex-direction: column;
+      gap: 8px;
+      width: 270px; /* Expanded from 216px to cleanly fit 9 columns */
+    }
+    .color-dropdown-content.show {
+      display: flex;
+    }
+    .color-default-option {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      width: 100%;
+      padding: 6px 8px;
+      border-radius: 6px;
+      background: transparent;
+      border: 1px solid var(--border-soft);
+      color: var(--text-primary);
+      font-size: 0.75rem;
+      cursor: pointer;
+      font-family: inherit;
+      transition: all 0.15s ease;
+    }
+    .color-default-option:hover {
+      background: var(--bg-hover);
+      border-color: var(--border-medium);
+    }
+    .color-palette-group {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .color-row {
+      display: flex;
+      gap: 4px;
+    }
+    .color-dropdown-content .color-swatch {
+      width: 24px;
+      height: 24px;
+      border-radius: 4px;
+      cursor: pointer;
+      border: 2px solid transparent;
+      transition: all .15s ease;
+      position: relative;
+    }
+    .color-dropdown-content .color-swatch:hover {
+      border-color: var(--text-primary);
+      transform: scale(1.15);
+      z-index: 2;
+    }
+    .color-dropdown-content .color-swatch.active {
+      border-color: var(--text-primary);
+      box-shadow: 0 0 0 2px var(--bg-dropdown), 0 0 0 3px var(--text-primary);
+    }
+    .align-dropdown-content, .list-dropdown-content {
+      display: none;
+      position: absolute;
+      background: var(--bg-dropdown);
+      min-width: 140px;
+      box-shadow: var(--shadow-dropdown);
+      border-radius: 12px;
+      padding: 4px;
+      z-index: 1000;
+      border: 1px solid var(--border-soft);
+      transition: background .35s ease, border-color .35s ease;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .align-dropdown-content.show, .list-dropdown-content.show {
+      display: flex;
+    }
+    .align-dropdown-content button, .list-dropdown-content button {
+      background: transparent;
+      border: 1px solid transparent;
+      border-radius: 6px;
+      padding: 6px 10px;
+      font-size: .8rem;
+      cursor: pointer;
+      color: var(--text-secondary);
+      font-family: inherit;
+      transition: all .15s ease;
+      width: 100%;
+      text-align: left;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .align-dropdown-content button:hover, .list-dropdown-content button:hover {
+      background: var(--bg-hover);
+      color: var(--text-primary);
+    }
+
+    .align-icon-custom {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      width: 14px;
+    }
+    .align-icon-custom span {
+      display: block;
+      height: 1.5px;
+      background-color: currentColor;
+      border-radius: 1px;
+    }
+
+    .editor-font-size-controls {
+      display: flex;
+      align-items: center;
+      gap: 2px;
+      background: var(--bg-input);
+      border-radius: 6px;
+      border: 1px solid var(--border-soft);
+      padding: 0 2px;
+    }
+    .editor-font-size-controls button {
+      background: transparent;
+      border: none;
+      border-radius: 4px;
+      width: 22px;
+      height: 22px;
+      cursor: pointer;
+      color: var(--text-muted);
+      font-size: .8rem;
+      font-weight: bold;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all .2s ease;
+      font-family: inherit;
+    }
+    .editor-font-size-controls button:hover {
+      background: var(--bg-hover);
+      color: var(--text-primary);
+    }
+    .editor-font-size-controls .size-display {
+      font-size: .75rem;
+      color: var(--text-primary);
+      min-width: 28px;
+      text-align: center;
+      font-weight: 500;
+      user-select: none;
+    }
+    html:not([data-theme="light"]) .status-save.saved {
+  border: 1px solid rgba(74, 138, 74, .25) !important;
+}
+    
+    .editor-wrapper {
+  position: relative;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 600px; /* Allow flex shrinking */
+  height: 100%; /* Take full height of parent */
+  overflow: hidden; /* Prevents wrapper from expanding */
+  background: var(--bg-wrapper); /* Add this */
+  transition: background .35s ease; 
+}
+
+    .popout-top-right-btn {
+      position: absolute;
+      top: 10px;
+      right: 12px;
+      z-index: 10;
+      background: var(--bg-hover);
+      border: 1px solid var(--border-soft);
+      border-radius: 6px;
+      width: 28px;
+      height: 28px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      color: var(--text-muted);
+      font-size: 0.95rem;
+      transition: all 0.2s ease;
+    }
+    .popout-top-right-btn:hover {
+      background: var(--bg-active);
+      color: var(--text-primary);
+      border-color: var(--border-medium);
+    }
+    .popout-top-right-btn svg {
+      width: 14px;
+      height: 14px;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    .note-content {
+  flex: 1;
+  min-height: 300px;
+  height: auto;
+  width: 100%;
+  padding: 16px 20px;
+  font-size: .9rem;
+  line-height: 1.8;
+  border: 1px solid var(--border-soft);
+  border-radius: 14px;
+  background: var(--bg-content);
+  outline: none !important;
+  color: var(--text-secondary);
+  transition: background .35s ease, border-color .35s ease;
+  scroll-behavior: smooth;
+  overflow-y: auto; /* THIS enables scrolling */
+  max-height: 600px; /* Prevents unlimited growth */
+}
+    .note-content:focus {
+      outline: none !important;
+      box-shadow: none !important;
+      border-color: var(--border-soft);
+    }
+    .note-content h1 {
+      font-size: 1.6rem;
+      font-weight: 600;
+      margin: 10px 0 6px 0;
+      letter-spacing: -.3px;
+      color: var(--text-primary);
+      transition: color .35s ease;
+    }
+    .note-content h2 {
+      font-size: 1.3rem;
+      font-weight: 600;
+      margin: 8px 0 4px 0;
+      letter-spacing: -.2px;
+      color: var(--text-primary);
+      transition: color .35s ease;
+    }
+    .note-content h3 {
+      font-size: 1rem;
+      font-weight: 600;
+      margin: 6px 0 4px 0;
+      color: var(--text-primary);
+      transition: color .35s ease;
+    }
+    .note-content ul,
+    .note-content ol {
+      padding-left: 24px;
+    }
+    .note-content li {
+      margin: 3px 0;
+    }
+    .note-content p {
+      margin: 4px 0;
+    }
+    /* Checkbox styling fix: normal cursor height & spacing */
+.note-content input[type="checkbox"] {
+  display: inline-block;
+  margin-right: 8px;
+  margin-left: 2px;
+  vertical-align: baseline;
+  width: 15px;
+  height: 15px;
+  cursor: pointer;
+}
+
+    .note-content input[type="checkbox"] {
+      appearance: none;
+      -webkit-appearance: none;
+      width: 15px;
+      height: 15px;
+      border: 1.5px solid var(--text-muted);
+      border-radius: 3px;
+      outline: none;
+      cursor: pointer;
+      background: transparent !important;
+      display: inline-grid;
+      place-content: center;
+      margin: 0 4px 0 0;
+      vertical-align: middle;
+      transition: all 0.15s ease-in-out;
+    }
+    .note-content input[type="checkbox"]:hover {
+      border-color: var(--text-primary);
+      background-color: var(--bg-hover) !important;
+    }
+    .note-content input[type="checkbox"]:checked {
+      background-color: transparent !important;
+      border-color: var(--text-primary);
+    }
+    .note-content input[type="checkbox"]:checked::before {
+      content: "";
+      width: 8px;
+      height: 8px;
+      clip-path: polygon(14% 44%, 0 65%, 50% 100%, 100% 16%, 80% 0%, 43% 62%);
+      background-color: var(--text-primary);
+    }
+
+    .note-content sub {
+      font-size: 0.75em !important;
+      vertical-align: sub !important;
+      position: static !important;
+      line-height: normal !important;
+    }
+    .note-content sup {
+      font-size: 0.75em !important;
+      vertical-align: super !important;
+      position: static !important;
+      line-height: normal !important;
+    }
+
+    .note-content b,
+    .note-content strong {
+      color: var(--text-primary);
+      transition: color .35s ease;
+    }
+    .note-content i,
+    .note-content em {
+      color: var(--text-secondary);
+      transition: color .35s ease;
+    }
+    .note-content u {
+      text-decoration-color: var(--border-medium);
+      transition: text-decoration-color .35s ease;
+    }
+    .note-content s {
+      color: var(--text-dim);
+      transition: color .35s ease;
+    }
+    .note-content blockquote {
+      border-left: 4px solid var(--border-medium);
+      padding-left: 16px;
+      margin: 8px 0;
+      color: var(--text-muted);
+      font-style: italic;
+      transition: border-color .35s ease, color .35s ease;
+    }
+    .note-content pre {
+      background: var(--bg-hover);
+      border: 1px solid var(--border-soft);
+      border-radius: 8px;
+      padding: 12px 16px;
+      overflow-x: auto;
+      font-family: "Courier New", monospace;
+      font-size: .85rem;
+      color: var(--text-secondary);
+      margin: 8px 0;
+      transition: background .35s ease, border-color .35s ease, color .35s ease;
+    }
+    .note-content code {
+      background: var(--bg-hover);
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-family: "Courier New", monospace;
+      font-size: .85rem;
+      color: var(--text-secondary);
+      transition: background .35s ease, color .35s ease;
+    }
+    .note-content pre code {
+      background: transparent;
+      padding: 0;
+      color: inherit;
+    }
+    .note-content hr {
+      border: none;
+      border-top: 2px solid var(--border-soft);
+      margin: 16px 0;
+      transition: border-color .35s ease;
+    }
+    .info-section {
+      padding: 20px 20px 16px;
+      background: var(--bg-content);
+      border-radius: 14px;
+      border: 1px solid var(--border-soft);
+      margin-top: 30px;
+      color: var(--text-muted);
+      font-size: .85rem;
+      line-height: 1.7;
+      transition: all .35s ease;
+      flex-shrink: 0;
+    }
+    .info-section h2 {
+      color: var(--text-primary);
+      font-size: 1.1rem;
+      margin-bottom: 10px;
+      font-weight: 500;
+    }
+    .info-section p {
+      margin-bottom: 8px;
+    }
+    .info-section .highlight {
+      color: var(--accent-save);
+      font-weight: 500;
+    }
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, .75);
+      -webkit-backdrop-filter: blur(4px);
+      backdrop-filter: blur(4px);
+      z-index: 999999;
+      justify-content: center;
+      align-items: center;
+      animation: fadeIn .2s ease;
+    }
+    .modal-overlay.show {
+      display: flex;
+    }
+    .modal-box {
+      background: var(--bg-dropdown);
+      border: 1px solid var(--border-soft);
+      border-radius: 16px;
+      padding: 24px 28px 20px;
+      min-width: 300px;
+      max-width: 400px;
+      box-shadow: var(--shadow-card);
+      animation: slideUp .25s ease;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    @keyframes slideUp {
+      from {
+        transform: translateY(20px) scale(.96);
+        opacity: 0;
+      }
+      to {
+        transform: translateY(0) scale(1);
+        opacity: 1;
+      }
+    }
+    .modal-box h3 {
+      color: var(--text-primary);
+      font-size: 1rem;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+    .modal-box p {
+      color: var(--text-muted);
+      font-size: .8rem;
+      margin-bottom: 14px;
+    }
+    .modal-box input {
+      width: 100%;
+      padding: 8px 12px;
+      border-radius: 8px;
+      border: 1px solid var(--border-soft);
+      background: var(--bg-input);
+      font-size: .9rem;
+      color: var(--text-primary);
+      outline: none;
+      font-family: inherit;
+      transition: border-color .3s ease;
+    }
+    .modal-box input:focus {
+      border-color: var(--border-medium);
+    }
+    .modal-box .modal-actions {
+      display: flex;
+      gap: 8px;
+      justify-content: flex-end;
+      margin-top: 14px;
+    }
+    .modal-box .modal-actions button {
+      padding: 6px 20px;
+      border-radius: 30px;
+      border: 1px solid var(--border-soft);
+      background: var(--bg-hover);
+      color: var(--text-secondary);
+      font-size: .8rem;
+      cursor: pointer;
+      font-family: inherit;
+      transition: all .2s ease;
+    }
+    .modal-box .modal-actions button:hover {
+      background: var(--bg-active);
+    }
+    .modal-box .modal-actions button.primary {
+      background: var(--bg-active);
+      border-color: var(--border-medium);
+      color: var(--text-primary);
+      font-weight: 500;
+    }
+    .modal-box .modal-actions button.primary:hover {
+      background: var(--bg-hover);
+    }
+    .modal-box .modal-actions button.danger {
+      color: var(--accent-danger);
+      border-color: rgba(184, 74, 74, .3);
+      background: rgba(184, 74, 74, .1);
+    }
+    .modal-box .modal-actions button.danger:hover {
+      background: rgba(184, 74, 74, .2);
+    }
+    @media(max-width:768px) {
+      :root {
+        --sidebar-width: 200px;
+      }
+      .editor {
+        padding: 10px 14px 10px 20px;
+      }
+      .app-header {
+        padding: 12px 16px;
+        min-height: 60px;
+      }
+      .app-header .brand .logo {
+        font-size: 1.3rem;
+      }
+      .format-toolbar button {
+        font-size: .65rem;
+        padding: 2px 6px;
+        height: 24px;
+        min-width: 22px;
+      }
+      .format-toolbar .counter {
+        font-size: .6rem;
+        gap: 4px;
+      }
+      .format-toolbar .counter .word-count,
+      .format-toolbar .counter .char-count {
+        font-size: .75rem;
+        min-width: 18px;
+      }
+      .format-toolbar .counter .label {
+        display: none;
+      }
+      body {
+        padding: 0;
+      }
+      .app {
+        border-radius: 0;
+      }
+      .theme-toggle .label {
+        display: none;
+      }
+      .sidebar-toggle-btn {
+        width: 20px;
+        height: 50px;
+        font-size: .7rem;
+      }
+      .sidebar-toggle-btn:hover {
+        width: 24px;
+      }
+      .header-btn {
+        padding: 4px 12px;
+        font-size: .75rem;
+        min-height: 34px;
+      }
+      .status-save {
+        font-size: .75rem;
+        padding: 4px 10px;
+        min-width: 60px;
+        min-height: 34px;
+      }
+      .theme-toggle {
+        padding: 4px 10px;
+        font-size: .8rem;
+        min-height: 34px;
+      }
+      .format-toolbar .toolbar-right {
+        padding-left: 6px;
+        gap: 4px;
+      }
+      .modal-box {
+        min-width: 260px;
+        padding: 16px 20px;
+      }
+      .folder-header {
+        font-size: .8rem;
+      }
+      .note-item {
+        font-size: .75rem;
+      }
+      .section-header {
+        font-size: .6rem;
+      }
+      .search-box {
+        font-size: .8rem;
+      }
+      #fontFamilySelect {
+        min-width: 60px;
+        font-size: .6rem;
+      }
+      .editor-top .note-title-input {
+        font-size: 1.2rem;
+      }
+      .editor-top .note-modified {
+        font-size: .6rem;
+      }
+      .color-dropdown-content {
+        width: 140px;
+      }
+      .color-dropdown-content .color-swatch {
+        width: 22px;
+        height: 22px;
+      }
+    }
+    @media(max-width:500px) {
+      :root {
+        --sidebar-width: 150px;
+      }
+      .app-header .brand .badge {
+        display: none;
+      }
+      .header-btn {
+        padding: 3px 8px;
+        font-size: .6rem;
+      }
+      .editor-top .note-title-input {
+        font-size: 1rem;
+      }
+      .format-toolbar .counter {
+        gap: 2px;
+        font-size: .5rem;
+      }
+      .format-toolbar .counter .word-count,
+      .format-toolbar .counter .char-count {
+        font-size: .6rem;
+        min-width: 14px;
+      }
+      .modal-box {
+        min-width: 200px;
+        padding: 14px 16px;
+      }
+      .modal-box h3 {
+        font-size: .9rem;
+      }
+      #fontFamilySelect {
+        min-width: 50px;
+        font-size: .55rem;
+      }
+      .editor-top .note-modified {
+        font-size: .5rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <div class="app-header">
+      <div class="brand"><span class="logo">MultiNote </div>
+      <div class="header-actions">
+        <span class="status-save" id="saveStatus">saved</span>
+        <button class="theme-toggle" id="themeToggle"><span class="icon sun"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-sun-icon lucide-sun"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg></span><span class="icon moon"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-moon-icon lucide-moon"><path d="M20.985 12.486a9 9 0 1 1-9.473-9.472c.405-.022.617.46.402.803a6 6 0 0 0 8.268 8.268c.344-.215.825-.004.803.401"/></svg></span><span class="label">Theme</span></button>
+        <!-- <button class="header-btn" id="exportAllBtn">Export</button> -->
+        <button class="header-btn danger" id="clearAllBtn">Clear</button>
+      </div>
+    </div>
+    <div class="main-area">
+      <div class="manager" id="sidebar">
+        <div class="create-btn-container">
+          <div class="create-dropdown">
+            <button class="create-btn" id="createBtn" title="Create"><span>+</span> Create</button>
+            <div class="create-dropdown-content" id="createDropdown">
+              <button data-action="note"><span class="icon"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-file-icon lucide-file"><path d="M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2z"/><path d="M14 2v5a1 1 0 0 0 1 1h5"/></svg></span> New Note</button>
+              <button data-action="folder"><span class="icon"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-folder-icon lucide-folder"><path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"/></svg></span> New Folder</button>
+            </div>
+          </div>
+        </div>
+        <input class="search-box" id="searchBox" placeholder="Search notes..." />
+        <div class="tree-container" id="treeContainer">
+          <div class="section-header"><span>Folders</span><span class="count" id="folderCount">0</span></div>
+          <div id="folderList"></div>
+          <div class="section-header notes-header"><span>Notes</span><span class="count" id="noteCount">0</span></div>
+          <div id="noteList"></div>
+        </div>
+      </div>
+      <button class="sidebar-toggle-btn" id="sidebarToggleBtn">‹</button>
+      <div class="editor" id="editor">
+        <div class="editor-top">
+          <div class="title-area">
+            <input type="text" class="note-title-input" id="noteTitleInput" placeholder="Title..." />
+            <span class="note-modified" id="noteModified"></span>
+          </div>
+
+        </div>
+
+        <!-- FORMAT TOOLBAR -->
+        <div class="format-toolbar" id="formatToolbar">
+          <div class="toolbar-left">
+            
+            <div class="toolbar-group">
+
+              <select id="fontFamilySelect" title="Font">
+                <option value="'SF Pro Display',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif">System</option>
+                <option value="Georgia,serif">Georgia</option>
+                <option value="'Times New Roman',serif">Times</option>
+                <option value="'Courier New',monospace">Courier</option>
+                <option value="Arial,sans-serif">Arial</option>
+                <option value="'Comic Sans MS',cursive">Comic Sans</option>
+                <option value="'Inter', sans-serif">Inter</option>
+              </select>
+              <div class="editor-font-size-controls" title="Font size">
+                <button id="fontSizeDecrease">-</button>
+                <span class="size-display" id="fontSizeDisplay">16</span>
+                <button id="fontSizeIncrease">+</button>
+              </div>
+            </div>
+
+            <span class="sep"></span>
+
+            <div class="toolbar-group">
+              <button data-cmd="bold" title="Bold (Ctrl+B)"><b>B</b></button>
+              <button data-cmd="italic" title="Italic (Ctrl+I)"><i>I</i></button>
+              <button data-cmd="underline" title="Underline (Ctrl+U)"><u>U</u></button>
+              <button data-cmd="strikeThrough" title="Strikethrough"><s>S</s></button>
+              <button data-cmd="superscript" title="Superscript">X²</button>
+              <button data-cmd="subscript" title="Subscript">X₂</button>
+              
+              <div class="color-dropdown">
+                <button class="color-dropdown-btn" id="colorBtn" title="Text Color">
+                  <div class="gdoc-color-icon">
+                    <span>A</span>
+                    <div class="gdoc-color-bar" id="textColorIndicator"></div>
+                  </div>
+                </button>
+                <div class="color-dropdown-content" id="colorDropdown">
+                  <button class="color-default-option" data-color="inherit">
+                    <span style="display:inline-block;width:12px;height:12px;border-radius:50%;background:currentColor;"></span>
+                    Default Color
+                  </button>
+                  <div class="color-palette-group">
+                    <!-- Row 1: Darkest Shades -->
+                    <div class="color-row">
+                      <div class="color-swatch" style="background:#000000" data-color="#000000" title="Black"></div>
+                      <div class="color-swatch" style="background:#8b0000" data-color="#8b0000" title="Dark Red"></div>
+                      <div class="color-swatch" style="background:#e65100" data-color="#e65100" title="Dark Orange"></div>
+                      <div class="color-swatch" style="background:#f57f17" data-color="#f57f17" title="Dark Yellow"></div>
+                      <div class="color-swatch" style="background:#1b5e20" data-color="#1b5e20" title="Dark Green"></div>
+                      <div class="color-swatch" style="background:#006064" data-color="#006064" title="Dark Cyan"></div>
+                      <div class="color-swatch" style="background:#0d47a1" data-color="#0d47a1" title="Dark Blue"></div>
+                      <div class="color-swatch" style="background:#4a148c" data-color="#4a148c" title="Dark Purple"></div>
+                      <div class="color-swatch" style="background:#880e4f" data-color="#880e4f" title="Dark Pink"></div>
+                    </div>
+                    <!-- Row 2: Deep Shades -->
+                    <div class="color-row">
+                      <div class="color-swatch" style="background:#424242" data-color="#424242" title="Dark Gray"></div>
+                      <div class="color-swatch" style="background:#c62828" data-color="#c62828" title="Deep Red"></div>
+                      <div class="color-swatch" style="background:#f57c00" data-color="#f57c00" title="Deep Orange"></div>
+                      <div class="color-swatch" style="background:#fbc02d" data-color="#fbc02d" title="Deep Yellow"></div>
+                      <div class="color-swatch" style="background:#2e7d32" data-color="#2e7d32" title="Deep Green"></div>
+                      <div class="color-swatch" style="background:#00838f" data-color="#00838f" title="Deep Cyan"></div>
+                      <div class="color-swatch" style="background:#1565c0" data-color="#1565c0" title="Deep Blue"></div>
+                      <div class="color-swatch" style="background:#6a1b9a" data-color="#6a1b9a" title="Deep Purple"></div>
+                      <div class="color-swatch" style="background:#ad1457" data-color="#ad1457" title="Deep Pink"></div>
+                    </div>
+                    <!-- Row 3: Medium / Primary Colors -->
+                    <div class="color-row">
+                      <div class="color-swatch" style="background:#757575" data-color="#757575" title="Medium Gray"></div>
+                      <div class="color-swatch" style="background:#e53935" data-color="#e53935" title="Red"></div>
+                      <div class="color-swatch" style="background:#ff9800" data-color="#ff9800" title="Orange"></div>
+                      <div class="color-swatch" style="background:#ffeb3b" data-color="#ffeb3b" title="Yellow"></div>
+                      <div class="color-swatch" style="background:#4caf50" data-color="#4caf50" title="Green"></div>
+                      <div class="color-swatch" style="background:#00bcd4" data-color="#00bcd4" title="Cyan"></div>
+                      <div class="color-swatch" style="background:#2196f3" data-color="#2196f3" title="Blue"></div>
+                      <div class="color-swatch" style="background:#9c27b0" data-color="#9c27b0" title="Purple"></div>
+                      <div class="color-swatch" style="background:#e91e63" data-color="#e91e63" title="Pink"></div>
+                    </div>
+                    <!-- Row 4: Soft / Medium Light Shades -->
+                    <div class="color-row">
+                      <div class="color-swatch" style="background:#bdbdbd" data-color="#bdbdbd" title="Light Gray"></div>
+                      <div class="color-swatch" style="background:#ef5350" data-color="#ef5350" title="Soft Red"></div>
+                      <div class="color-swatch" style="background:#ffb74d" data-color="#ffb74d" title="Soft Orange"></div>
+                      <div class="color-swatch" style="background:#fff176" data-color="#fff176" title="Soft Yellow"></div>
+                      <div class="color-swatch" style="background:#81c784" data-color="#81c784" title="Soft Green"></div>
+                      <div class="color-swatch" style="background:#4dd0e1" data-color="#4dd0e1" title="Soft Cyan"></div>
+                      <div class="color-swatch" style="background:#64b5f6" data-color="#64b5f6" title="Soft Blue"></div>
+                      <div class="color-swatch" style="background:#ba68c8" data-color="#ba68c8" title="Soft Purple"></div>
+                      <div class="color-swatch" style="background:#f06292" data-color="#f06292" title="Soft Pink"></div>
+                    </div>
+                    <!-- Row 5: Light Pastels -->
+                    <div class="color-row">
+                      <div class="color-swatch" style="background:#e0e0e0" data-color="#e0e0e0" title="Silver"></div>
+                      <div class="color-swatch" style="background:#e57373" data-color="#e57373" title="Light Red"></div>
+                      <div class="color-swatch" style="background:#ffe0b2" data-color="#ffe0b2" title="Light Orange"></div>
+                      <div class="color-swatch" style="background:#fff9c4" data-color="#fff9c4" title="Light Yellow"></div>
+                      <div class="color-swatch" style="background:#c8e6c9" data-color="#c8e6c9" title="Light Green"></div>
+                      <div class="color-swatch" style="background:#b2ebf2" data-color="#b2ebf2" title="Light Cyan"></div>
+                      <div class="color-swatch" style="background:#bbdefb" data-color="#bbdefb" title="Light Blue"></div>
+                      <div class="color-swatch" style="background:#e1bee7" data-color="#e1bee7" title="Light Purple"></div>
+                      <div class="color-swatch" style="background:#f8bbd0" data-color="#f8bbd0" title="Light Pink"></div>
+                    </div>
+                    <!-- Row 6: Very Pale / White Shades -->
+                    <div class="color-row">
+                      <div class="color-swatch" style="background:#ffffff" data-color="#ffffff" title="White"></div>
+                      <div class="color-swatch" style="background:#ffcdd2" data-color="#ffcdd2" title="Pale Red"></div>
+                      <div class="color-swatch" style="background:#fff3e0" data-color="#fff3e0" title="Pale Orange"></div>
+                      <div class="color-swatch" style="background:#fffde7" data-color="#fffde7" title="Pale Yellow"></div>
+                      <div class="color-swatch" style="background:#e8f5e9" data-color="#e8f5e9" title="Pale Green"></div>
+                      <div class="color-swatch" style="background:#e0f7fa" data-color="#e0f7fa" title="Pale Cyan"></div>
+                      <div class="color-swatch" style="background:#e3f2fd" data-color="#e3f2fd" title="Pale Blue"></div>
+                      <div class="color-swatch" style="background:#f3e5f5" data-color="#f3e5f5" title="Pale Purple"></div>
+                      <div class="color-swatch" style="background:#fce4ec" data-color="#fce4ec" title="Pale Pink"></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="color-dropdown">
+                <button class="color-dropdown-btn" id="highlightBtn" title="Highlight Color">
+                  <div class="gdoc-highlight-icon">
+                    <span><svg xmlns="http://www.w3.org/2000/svg" width="18" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-highlighter-icon lucide-highlighter"><path d="m9 11-6 6v3h9l3-3"/><path d="m22 12-4.6 4.6a2 2 0 0 1-2.8 0l-5.2-5.2a2 2 0 0 1 0-2.8L14 4"/></svg></span>
+                    <div class="gdoc-highlight-bar" id="highlightColorIndicator"></div>
+                  </div>
+                </button>
+                <div class="color-dropdown-content" id="highlightDropdown">
+                  <button class="color-default-option" data-color="transparent">
+                    <span style="display:inline-block;width:12px;height:12px;border-radius:50%;border:1px dashed var(--text-dim);"></span>
+                    No Highlight (Default)
+                  </button>
+                  <div class="color-palette-group">
+                    <!-- Row 1: Darkest Shades -->
+                    <div class="color-row">
+                      <div class="color-swatch" style="background:#000000" data-color="#000000" title="Black"></div>
+                      <div class="color-swatch" style="background:#8b0000" data-color="#8b0000" title="Dark Red"></div>
+                      <div class="color-swatch" style="background:#e65100" data-color="#e65100" title="Dark Orange"></div>
+                      <div class="color-swatch" style="background:#f57f17" data-color="#f57f17" title="Dark Yellow"></div>
+                      <div class="color-swatch" style="background:#1b5e20" data-color="#1b5e20" title="Dark Green"></div>
+                      <div class="color-swatch" style="background:#006064" data-color="#006064" title="Dark Cyan"></div>
+                      <div class="color-swatch" style="background:#0d47a1" data-color="#0d47a1" title="Dark Blue"></div>
+                      <div class="color-swatch" style="background:#4a148c" data-color="#4a148c" title="Dark Purple"></div>
+                      <div class="color-swatch" style="background:#880e4f" data-color="#880e4f" title="Dark Pink"></div>
+                    </div>
+                    <!-- Row 2: Deep Shades -->
+                    <div class="color-row">
+                      <div class="color-swatch" style="background:#424242" data-color="#424242" title="Dark Gray"></div>
+                      <div class="color-swatch" style="background:#c62828" data-color="#c62828" title="Deep Red"></div>
+                      <div class="color-swatch" style="background:#f57c00" data-color="#f57c00" title="Deep Orange"></div>
+                      <div class="color-swatch" style="background:#fbc02d" data-color="#fbc02d" title="Deep Yellow"></div>
+                      <div class="color-swatch" style="background:#2e7d32" data-color="#2e7d32" title="Deep Green"></div>
+                      <div class="color-swatch" style="background:#00838f" data-color="#00838f" title="Deep Cyan"></div>
+                      <div class="color-swatch" style="background:#1565c0" data-color="#1565c0" title="Deep Blue"></div>
+                      <div class="color-swatch" style="background:#6a1b9a" data-color="#6a1b9a" title="Deep Purple"></div>
+                      <div class="color-swatch" style="background:#ad1457" data-color="#ad1457" title="Deep Pink"></div>
+                    </div>
+                    <!-- Row 3: Medium / Primary Colors -->
+                    <div class="color-row">
+                      <div class="color-swatch" style="background:#757575" data-color="#757575" title="Medium Gray"></div>
+                      <div class="color-swatch" style="background:#e53935" data-color="#e53935" title="Red"></div>
+                      <div class="color-swatch" style="background:#ff9800" data-color="#ff9800" title="Orange"></div>
+                      <div class="color-swatch" style="background:#ffeb3b" data-color="#ffeb3b" title="Yellow"></div>
+                      <div class="color-swatch" style="background:#4caf50" data-color="#4caf50" title="Green"></div>
+                      <div class="color-swatch" style="background:#00bcd4" data-color="#00bcd4" title="Cyan"></div>
+                      <div class="color-swatch" style="background:#2196f3" data-color="#2196f3" title="Blue"></div>
+                      <div class="color-swatch" style="background:#9c27b0" data-color="#9c27b0" title="Purple"></div>
+                      <div class="color-swatch" style="background:#e91e63" data-color="#e91e63" title="Pink"></div>
+                    </div>
+                    <!-- Row 4: Soft / Medium Light Shades -->
+                    <div class="color-row">
+                      <div class="color-swatch" style="background:#bdbdbd" data-color="#bdbdbd" title="Light Gray"></div>
+                      <div class="color-swatch" style="background:#ef5350" data-color="#ef5350" title="Soft Red"></div>
+                      <div class="color-swatch" style="background:#ffb74d" data-color="#ffb74d" title="Soft Orange"></div>
+                      <div class="color-swatch" style="background:#fff176" data-color="#fff176" title="Soft Yellow"></div>
+                      <div class="color-swatch" style="background:#81c784" data-color="#81c784" title="Soft Green"></div>
+                      <div class="color-swatch" style="background:#4dd0e1" data-color="#4dd0e1" title="Soft Cyan"></div>
+                      <div class="color-swatch" style="background:#64b5f6" data-color="#64b5f6" title="Soft Blue"></div>
+                      <div class="color-swatch" style="background:#ba68c8" data-color="#ba68c8" title="Soft Purple"></div>
+                      <div class="color-swatch" style="background:#f06292" data-color="#f06292" title="Soft Pink"></div>
+                    </div>
+                    <!-- Row 5: Light Pastels -->
+                    <div class="color-row">
+                      <div class="color-swatch" style="background:#e0e0e0" data-color="#e0e0e0" title="Silver"></div>
+                      <div class="color-swatch" style="background:#e57373" data-color="#e57373" title="Light Red"></div>
+                      <div class="color-swatch" style="background:#ffe0b2" data-color="#ffe0b2" title="Light Orange"></div>
+                      <div class="color-swatch" style="background:#fff9c4" data-color="#fff9c4" title="Light Yellow"></div>
+                      <div class="color-swatch" style="background:#c8e6c9" data-color="#c8e6c9" title="Light Green"></div>
+                      <div class="color-swatch" style="background:#b2ebf2" data-color="#b2ebf2" title="Light Cyan"></div>
+                      <div class="color-swatch" style="background:#bbdefb" data-color="#bbdefb" title="Light Blue"></div>
+                      <div class="color-swatch" style="background:#e1bee7" data-color="#e1bee7" title="Light Purple"></div>
+                      <div class="color-swatch" style="background:#f8bbd0" data-color="#f8bbd0" title="Light Pink"></div>
+                    </div>
+                    <!-- Row 6: Very Pale / White Shades -->
+                    <div class="color-row">
+                      <div class="color-swatch" style="background:#ffffff" data-color="#ffffff" title="White"></div>
+                      <div class="color-swatch" style="background:#ffcdd2" data-color="#ffcdd2" title="Pale Red"></div>
+                      <div class="color-swatch" style="background:#fff3e0" data-color="#fff3e0" title="Pale Orange"></div>
+                      <div class="color-swatch" style="background:#fffde7" data-color="#fffde7" title="Pale Yellow"></div>
+                      <div class="color-swatch" style="background:#e8f5e9" data-color="#e8f5e9" title="Pale Green"></div>
+                      <div class="color-swatch" style="background:#e0f7fa" data-color="#e0f7fa" title="Pale Cyan"></div>
+                      <div class="color-swatch" style="background:#e3f2fd" data-color="#e3f2fd" title="Pale Blue"></div>
+                      <div class="color-swatch" style="background:#f3e5f5" data-color="#f3e5f5" title="Pale Purple"></div>
+                      <div class="color-swatch" style="background:#fce4ec" data-color="#fce4ec" title="Pale Pink"></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <span class="sep"></span>
+
+            <div class="toolbar-group">
+              <div class="align-dropdown">
+                <button class="align-dropdown-btn" id="alignBtn" title="Align">
+                  <div class="align-icon-custom">
+                    <span style="width: 100%;"></span>
+                    <span style="width: 70%;"></span>
+                    <span style="width: 85%;"></span>
+                  </div>
+                </button>
+                <div class="align-dropdown-content" id="alignDropdown">
+                  <button data-cmd="justifyLeft">
+                    <div class="align-icon-custom" style="align-items: flex-start;">
+                      <span style="width: 100%;"></span>
+                      <span style="width: 60%;"></span>
+                      <span style="width: 80%;"></span>
+                    </div>
+                    Left
+                  </button>
+                  <button data-cmd="justifyCenter">
+                    <div class="align-icon-custom" style="align-items: center;">
+                      <span style="width: 100%;"></span>
+                      <span style="width: 60%;"></span>
+                      <span style="width: 80%;"></span>
+                    </div>
+                    Center
+                  </button>
+                  <button data-cmd="justifyRight">
+                    <div class="align-icon-custom" style="align-items: flex-end;">
+                      <span style="width: 100%;"></span>
+                      <span style="width: 60%;"></span>
+                      <span style="width: 80%;"></span>
+                    </div>
+                    Right
+                  </button>
+                  <button data-cmd="justifyFull">
+                    <div class="align-icon-custom">
+                      <span style="width: 100%;"></span>
+                      <span style="width: 100%;"></span>
+                      <span style="width: 100%;"></span>
+                    </div>
+                    Justify
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <span class="sep"></span>
+
+            <div class="toolbar-group">
+              <div class="list-dropdown">
+                <button class="list-dropdown-btn" id="listDropdownBtn" title="Lists">List ▾</button>
+                <div class="list-dropdown-content" id="listDropdown">
+                  <button id="bulletListOption">• Bulleted list</button>
+                  <button id="numberedListOption">1. Numbered list</button>
+                  <button id="checkboxOption">☑ Checklist</button>
+                </div>
+              </div>
+              <button id="blockquoteBtn" title="Quote">"</button>
+              <button id="codeBlockBtn" title="Code block">```</button>
+              <button id="hrBtn" title="Horizontal line">—</button>
+            </div>
+          </div>
+
+          <div class="toolbar-right">
+            <div class="counter">
+              <span><span class="label">Words</span> <span class="word-count" id="wordCount">0</span></span>
+              <span class="sep-line"></span>
+              <span><span class="label">Chars</span> <span class="char-count" id="charCount">0</span></span>
+            </div>
+          </div>
+        </div>
+
+        <div class="editor-wrapper">
+          <!-- <button class="popout-top-right-btn" id="popoutBtn" title="Popout">
+            <svg viewBox="0 0 24 24">
+              <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+              <polyline points="15 3 21 3 21 9"></polyline>
+              <line x1="10" y1="14" x2="21" y2="3"></line>
+            </svg>
+          </button> -->
+          <div class="note-content" id="noteContent" contenteditable="true" spellcheck="true"></div>
+        </div>
+
+        <div class="info-section" id="infoSection">
+          <h2>✍️ About MultiNote</h2>
+          <p><strong>MultiNote</strong> is a free online notepad that works right in your browser. No account needed — just open the page and start writing.</p>
+          
+          <p><strong>Multiple Notes & Folders</strong> — Create unlimited notes and organize them into folders. Drag and drop to reorder or move notes between folders. Search across all your content and track when each note was last edited.</p>
+          
+          <p><strong>Rich Text Formatting</strong> — Bold, italic, underline, lists, colors, fonts, and more. Format your notes exactly how you want them.</p>
+          
+          <p><strong>Auto-Save & Draft Recovery</strong> — Your notes save automatically as you type. Close your browser or navigate away? Your drafts are restored when you come back.</p>
+          
+          <p><strong>100% Private & Local</strong> — Everything stays on your device. No uploads, no servers, no accounts. Your notes never leave your browser.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="modal-overlay" id="modalOverlay">
+    <div class="modal-box" id="modalBox">
+      <h3 id="modalTitle">Rename</h3>
+      <p id="modalDesc">Enter a new name:</p>
+      <input type="text" id="modalInput" placeholder="New name..." />
+      <div class="modal-actions">
+        <button id="modalCancel">Cancel</button>
+        <button class="primary" id="modalConfirm">Save</button>
+      </div>
+    </div>
+  </div>
+  <script>
+    (function() {
+      "use strict";
+      const STORAGE_KEY = "notepad_tree_data_v19",
+        THEME_KEY = "notepad_theme",
+        SIDEBAR_KEY = "notepad_sidebar",
+        FONT_SIZE_KEY = "notepad_font_size";
+      let notes = [],
+        folders = [],
+        currentNoteId = null,
+        searchQuery = "",
+        saveTimer = null,
+        draggedNoteId = null,
+        draggedFolderName = null,
+        draggedType = null,
+        expandedFolders = new Set(),
+        currentTheme = "dark",
+        sidebarOpen = true,
+        isSaving = false,
+        currentFontSize = 16,
+        dropTargetFolder = null,
+        dropTargetNoteId = null,
+        dropPosition = null,
+        popoutWindow = null,
+        savedRange = null;
+      let modalResolve = null;
+      const folderList = document.getElementById("folderList"),
+        noteList = document.getElementById("noteList"),
+        noteTitleInput = document.getElementById("noteTitleInput"),
+        noteContent = document.getElementById("noteContent"),
+        noteModified = document.getElementById("noteModified"),
+        saveStatus = document.getElementById("saveStatus"),
+        searchBox = document.getElementById("searchBox"),
+
+        themeToggle = document.getElementById("themeToggle"),
+        sidebarToggleBtn = document.getElementById("sidebarToggleBtn"),
+        sidebar = document.getElementById("sidebar"),
+        wordCount = document.getElementById("wordCount"),
+        charCount = document.getElementById("charCount"),
+
+        fontFamilySelect = document.getElementById("fontFamilySelect"),
+        fontSizeDisplay = document.getElementById("fontSizeDisplay"),
+        infoSection = document.getElementById("infoSection"),
+        editor = document.getElementById("editor"),
+        modalOverlay = document.getElementById("modalOverlay"),
+        modalBox = document.getElementById("modalBox"),
+        modalTitle = document.getElementById("modalTitle"),
+        modalDesc = document.getElementById("modalDesc"),
+        modalInput = document.getElementById("modalInput"),
+        modalConfirm = document.getElementById("modalConfirm"),
+        modalCancel = document.getElementById("modalCancel");
+
+      function saveSelection() {
+        const sel = window.getSelection();
+        if (sel.rangeCount > 0 && noteContent.contains(sel.anchorNode)) {
+          savedRange = sel.getRangeAt(0).cloneRange();
+        }
+      }
+
+      function restoreSelection() {
+        noteContent.focus();
+        if (savedRange) {
+          const sel = window.getSelection();
+          sel.removeAllRanges();
+          sel.addRange(savedRange);
+        }
+      }
+
+// AFTER
+function formatTime(ts) {
+  if (!ts) return "";
+  const d = new Date(ts);
+  const now = new Date();
+
+  // Check if timestamp is on the exact same calendar day
+  const isSameDay = d.getFullYear() === now.getFullYear() &&
+                    d.getMonth() === now.getMonth() &&
+                    d.getDate() === now.getDate();
+
+  if (isSameDay) {
+    const diff = now - d;
+    if (diff < 60000) return "Just now";
+    if (diff < 3600000) return Math.floor(diff / 60000) + "m ago";
+    return Math.floor(diff / 3600000) + "h ago";
+  }
+
+  // Once over a day, display Month/Day (e.g., 10/24)
+  return (d.getMonth() + 1) + "/" + d.getDate();
+}
+      function formatFullTime(ts) {
+        if (!ts) return "";
+        const d = new Date(ts);
+        return d.toLocaleDateString() + " " + d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+      }
+
+      function showModal(title, desc, defaultVal, isInput = true, isDanger = false) {
+        return new Promise((resolve) => {
+          modalResolve = resolve;
+          modalTitle.textContent = title;
+          modalDesc.textContent = desc;
+          
+          if (isInput) {
+            modalInput.style.display = "block";
+            modalInput.value = defaultVal || "";
+            modalInput.placeholder = defaultVal ? "Enter name..." : "Name...";
+          } else {
+            modalInput.style.display = "none";
+          }
+
+          if (isDanger) {
+            modalConfirm.className = "danger";
+            modalConfirm.textContent = "Delete";
+          } else {
+            modalConfirm.className = "primary";
+            modalConfirm.textContent = "Save";
+          }
+
+          modalOverlay.classList.add("show");
+          if (isInput) {
+            setTimeout(() => modalInput.focus(), 100);
+            modalInput.select();
+          }
+        });
+      }
+
+      function closeModal(result) {
+        modalOverlay.classList.remove("show");
+        if (modalResolve) { 
+          modalResolve(result);
+          modalResolve = null;
+        }
+      }
+      document.addEventListener("DOMContentLoaded", () => {
+  const saveStatus = document.getElementById("saveStatus");
+  if (saveStatus) {
+    saveStatus.classList.add("saved");
+    saveStatus.textContent = "saved";
+  }
+});
+
+      modalConfirm.addEventListener("click", () => {
+        if (modalInput.style.display !== "none") {
+          const val = modalInput.value.trim();
+          if (val) closeModal(val);
+          else { 
+            modalInput.style.borderColor = "var(--accent-danger)";
+            setTimeout(() => { modalInput.style.borderColor = "" }, 800);
+          }
+        } else {
+          closeModal(true);
+        }
+      });
+
+      modalCancel.addEventListener("click", () => closeModal(null));
+      modalOverlay.addEventListener("click", (e) => { if (e.target === modalOverlay) closeModal(null) });
+      modalInput.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") { const val = modalInput.value.trim(); if (val) closeModal(val) }
+        if (e.key === "Escape") closeModal(null);
+      });
+      function updateCounter() {
+  // Extract text and strip zero-width characters and trailing line breaks
+  const rawText = noteContent.innerText || noteContent.textContent || "";
+  const cleanedText = rawText
+    .replace(/[\u200B-\u200D\uFEFF]/g, "")
+    .replace(/\r?\n$/g, "");
+
+  // Calculate Character Count
+  const charCountVal = cleanedText.length;
+
+  // Calculate Word Count (matches sequence of non-whitespace characters)
+  const words = cleanedText.trim().match(/\S+/g);
+  const wordCountVal = words ? words.length : 0;
+
+  // Update DOM Elements
+  const wordCounterEl = document.getElementById("wordCount");
+  const charCounterEl = document.getElementById("charCount");
+
+  if (wordCounterEl) wordCounterEl.textContent = wordCountVal;
+  if (charCounterEl) charCounterEl.textContent = charCountVal;
+}
+
+      function updateModifiedDisplay() {
+        if (currentNoteId) {
+          const note = notes.find((n) => n.id === currentNoteId);
+          if (note && note.modifiedAt) { noteModified.textContent = "Last edit: " + formatFullTime(note.modifiedAt) } else {
+            noteModified.textContent = "" }
+        }
+      }
+
+      function loadFontSize() {
+        try { 
+          const saved = localStorage.getItem(FONT_SIZE_KEY); 
+          if (saved) { 
+            currentFontSize = parseInt(saved) || 16;
+            applyFontSize(); 
+          } 
+        } catch (_) {}
+      }
+
+      function applyFontSize() {
+  noteContent.style.fontSize = currentFontSize + "px";
+  fontSizeDisplay.textContent = currentFontSize;
+  try { localStorage.setItem(FONT_SIZE_KEY, String(currentFontSize)); } catch (_) {}
+}
+
+      function applySelectionStyle(styleProp, value) {
+  restoreSelection();
+  const sel = window.getSelection();
+  if (!sel || sel.rangeCount === 0 || !noteContent.contains(sel.anchorNode)) return;
+
+  if (styleProp === "color") {
+    let colorValue = value;
+    if (value === "inherit" || value === "default") {
+      colorValue = window.getComputedStyle(noteContent).color;
+    }
+    document.execCommand("foreColor", false, colorValue);
+  } else if (styleProp === "backgroundColor") {
+    if (value === "transparent" || value === "default") {
+      // Apply standard transparent hiliteColor
+      document.execCommand("hiliteColor", false, "transparent");
+      
+      // Force selected elements to clear background without breaking parent styles
+      const range = sel.getRangeAt(0);
+      if (!range.collapsed) {
+        // Surround selection in an explicit transparent override span
+        const span = document.createElement("span");
+        span.style.backgroundColor = "transparent";
+        try {
+          range.surroundContents(span);
+        } catch (e) {
+          // Fallback for multi-node selections: apply removeFormat to clear background tags
+          document.execCommand("removeFormat", false, "hiliteColor");
+        }
+      }
+    } else {
+      document.execCommand("hiliteColor", false, value);
+    }
+  }
+
+  saveSelection();
+  scheduleSave();
+  detectSelectionFontSize();
+  detectSelectionColors();
+}
+function changeFontSize(delta) {
+  restoreSelection();
+  const sel = window.getSelection();
+  const activeNode = sel && sel.rangeCount > 0 ? sel.anchorNode : null;
+  const insideEditor = activeNode && noteContent.contains(activeNode);
+
+  // CASE 1: NO TEXT SELECTED OR NO SELECTION INSIDE EDITOR
+  // Scale all existing font sizes across every node inside the document
+  if (!insideEditor || sel.isCollapsed) {
+    // 1. Update overall default baseline font size
+    currentFontSize = Math.min(Math.max(currentFontSize + delta, 8), 120);
+    applyFontSize();
+
+    // 2. Traversal helper to gather all styled element nodes inside noteContent
+    const allElements = noteContent.querySelectorAll("*");
+    allElements.forEach((el) => {
+      // Check for inline style font-size (e.g. elements custom-scaled previously)
+      if (el.style && el.style.fontSize) {
+        const computedSize = parseInt(window.getComputedStyle(el).fontSize) || currentFontSize;
+        const newSize = Math.min(Math.max(computedSize + delta, 8), 120);
+        el.style.fontSize = newSize + "px";
+      }
+    });
+
+    scheduleSave();
+    detectSelectionFontSize();
+    return;
+  }
+
+  // CASE 2: TEXT IS SELECTED -> APPLY FONT SIZE SPAN TO SELECTED RANGE ONLY
+  const range = sel.getRangeAt(0);
+  
+  // Helper to extract all text nodes within the current selection range
+  function getTextNodesInRange(r) {
+    const textNodes = [];
+    const treeWalker = document.createTreeWalker(
+      r.commonAncestorContainer.nodeType === Node.TEXT_NODE
+        ? r.commonAncestorContainer.parentNode
+        : r.commonAncestorContainer,
+      NodeFilter.SHOW_TEXT,
+      {
+        acceptNode: function (node) {
+          return r.intersectsNode(node)
+            ? NodeFilter.FILTER_ACCEPT
+            : NodeFilter.FILTER_REJECT;
+        }
+      }
+    );
+
+    let node = treeWalker.nextNode();
+    while (node) {
+      if (noteContent.contains(node) && node.nodeValue.trim().length > 0) {
+        textNodes.push(node);
+      }
+      node = treeWalker.nextNode();
+    }
+    return textNodes;
+  }
+
+  const textNodes = getTextNodesInRange(range);
+
+  textNodes.forEach((targetNode) => {
+    // Determine target start/end boundaries within text node
+    let start = (targetNode === range.startContainer) ? range.startOffset : 0;
+    let end = (targetNode === range.endContainer) ? range.endOffset : targetNode.nodeValue.length;
+
+    if (start >= end) return;
+
+    // Split text node if the selection spans partially across it
+    let nodeToProcess = targetNode;
+    if (start > 0) {
+      nodeToProcess = targetNode.splitText(start);
+      end -= start;
+    }
+    if (end < nodeToProcess.nodeValue.length) {
+      nodeToProcess.splitText(end);
+    }
+
+    const parentEl = nodeToProcess.parentElement;
+    const computedSize = parseInt(window.getComputedStyle(parentEl).fontSize) || currentFontSize;
+    const newSize = Math.min(Math.max(computedSize + delta, 8), 120);
+
+    // If already wrapped in a dedicated single-child span, update font size directly
+    if (
+      parentEl.tagName === "SPAN" &&
+      parentEl.childNodes.length === 1 &&
+      parentEl.style.fontSize
+    ) {
+      parentEl.style.fontSize = newSize + "px";
+    } else {
+      const span = document.createElement("span");
+      span.style.fontSize = newSize + "px";
+      nodeToProcess.parentNode.insertBefore(span, nodeToProcess);
+      span.appendChild(nodeToProcess);
+    }
+  });
+
+  scheduleSave();
+  detectSelectionFontSize();
+}
+function detectSelectionFontSize() {
+  const sel = window.getSelection();
+  if (!sel || sel.rangeCount === 0 || !noteContent.contains(sel.anchorNode)) {
+    fontSizeDisplay.textContent = currentFontSize;
+    return;
+  }
+
+  if (sel.isCollapsed) {
+    let node = sel.anchorNode;
+    if (node.nodeType === Node.TEXT_NODE) node = node.parentElement;
+    if (node) {
+      const size = parseInt(window.getComputedStyle(node).fontSize);
+      if (size) {
+        fontSizeDisplay.textContent = size;
+        return;
+      }
+    }
+    fontSizeDisplay.textContent = currentFontSize;
+    return;
+  }
+
+  const range = sel.getRangeAt(0);
+  const container = range.commonAncestorContainer.nodeType === Node.TEXT_NODE
+    ? range.commonAncestorContainer.parentElement
+    : range.commonAncestorContainer;
+
+  const foundSizes = new Set();
+  const walker = document.createTreeWalker(container, NodeFilter.SHOW_TEXT, null, false);
+  let currentNode = walker.nextNode();
+
+  while (currentNode) {
+    if (range.intersectsNode(currentNode) && currentNode.textContent.trim().length > 0) {
+      const el = currentNode.parentElement;
+      if (el) {
+        const size = parseInt(window.getComputedStyle(el).fontSize);
+        if (size) foundSizes.add(size);
+      }
+    }
+    currentNode = walker.nextNode();
+  }
+
+  if (foundSizes.size > 1) {
+    fontSizeDisplay.textContent = "—";
+  } else if (foundSizes.size === 1) {
+    fontSizeDisplay.textContent = Array.from(foundSizes)[0];
+  } else {
+    fontSizeDisplay.textContent = currentFontSize;
+  }
+}
+      function rgbToHex(rgb) {
+  if (!rgb || rgb === "transparent" || rgb === "rgba(0, 0, 0, 0)") return "";
+  if (rgb.startsWith("#")) return rgb.toLowerCase();
+  const matches = rgb.match(/\d+/g);
+  if (!matches || matches.length < 3) return "";
+  const r = parseInt(matches[0]).toString(16).padStart(2, "0");
+  const g = parseInt(matches[1]).toString(16).padStart(2, "0");
+  const b = parseInt(matches[2]).toString(16).padStart(2, "0");
+  return `#${r}${g}${b}`;
+}
+
+function detectSelectionColors() {
+  const sel = window.getSelection();
+  if (!sel || sel.rangeCount === 0 || !noteContent.contains(sel.anchorNode)) return;
+
+  let node = sel.anchorNode;
+  if (node.nodeType === Node.TEXT_NODE) node = node.parentElement;
+
+  const textColorIndicator = document.getElementById("textColorIndicator");
+  const highlightColorIndicator = document.getElementById("highlightColorIndicator");
+
+  if (node) {
+    const style = window.getComputedStyle(node);
+
+    if (textColorIndicator) {
+      textColorIndicator.style.backgroundColor = style.color || "var(--text-primary)";
+    }
+    if (highlightColorIndicator) {
+      const hasBg = style.backgroundColor && style.backgroundColor !== "rgba(0, 0, 0, 0)" && style.backgroundColor !== "transparent";
+      highlightColorIndicator.style.backgroundColor = hasBg ? style.backgroundColor : "transparent";
+    }
+  }
+}
+
+// Live color updates on cursor movement
+["selectionchange", "keyup", "mouseup", "click", "focus"].forEach(evt => {
+  document.addEventListener(evt, () => {
+    const sel = window.getSelection();
+    if (sel && sel.rangeCount > 0 && noteContent.contains(sel.anchorNode)) {
+      detectSelectionColors();
+      detectSelectionFontSize();
+    }
+  });
+});
+
+// Prevent focus loss when interacting with dropdowns
+document.querySelectorAll('#colorDropdown, #highlightDropdown').forEach(dropdown => {
+  dropdown.addEventListener('mousedown', (e) => {
+    e.preventDefault();
+  });
+});
+
+// Text Color Handler
+document.querySelectorAll('#colorDropdown .color-swatch, #colorDropdown .color-default-option').forEach(item => {
+  item.addEventListener('click', (e) => {
+    e.stopPropagation();
+    const color = item.dataset.color || "default";
+    applySelectionStyle('color', color);
+    document.getElementById('colorDropdown').classList.remove('show');
+  });
+});
+
+// Highlight Color Handler
+document.querySelectorAll('#highlightDropdown .color-swatch, #highlightDropdown .color-default-option').forEach(item => {
+  item.addEventListener('click', (e) => {
+    e.stopPropagation();
+    const color = item.dataset.color || "default";
+    applySelectionStyle('backgroundColor', color);
+    document.getElementById('highlightDropdown').classList.remove('show');
+  });
+});
+      function loadTheme() {
+        try {
+          const saved = localStorage.getItem(THEME_KEY);
+          if (saved === "light" || saved === "dark") currentTheme = saved;
+          else if (window.matchMedia && window.matchMedia("(prefers-color-scheme: light)").matches) currentTheme = "light";
+        } catch (_) {}
+        applyTheme(currentTheme);
+      }
+// Live color update when moving cursor or selecting text inside the editor
+document.addEventListener("selectionchange", () => {
+        const sel = window.getSelection();
+        if (sel && sel.rangeCount > 0 && noteContent.contains(sel.anchorNode)) {
+          detectSelectionColors();
+          detectSelectionFontSize();
+        }
+      });
+
+      noteContent.addEventListener("keyup", detectSelectionColors);
+      noteContent.addEventListener("mouseup", detectSelectionColors);
+      noteContent.addEventListener("click", detectSelectionColors);
+      function applyTheme(theme) {
+        currentTheme = theme;
+        document.documentElement.setAttribute("data-theme", theme);
+        try { localStorage.setItem(THEME_KEY, theme) } catch (_) {}
+      }
+
+      function toggleTheme() { applyTheme(currentTheme === "dark" ? "light" : "dark") }
+      themeToggle.addEventListener("click", toggleTheme);
+
+      function loadSidebarState() {
+        try { const saved = localStorage.getItem(SIDEBAR_KEY);
+          sidebarOpen = saved !== "closed" } catch (_) { sidebarOpen = true }
+        applySidebarState();
+      }
+
+      function applySidebarState() {
+        if (sidebarOpen) { sidebar.classList.remove("closed");
+          sidebarToggleBtn.textContent = "‹" } else { sidebar.classList.add("closed");
+          sidebarToggleBtn.textContent = "›" }
+        try { localStorage.setItem(SIDEBAR_KEY, sidebarOpen ? "open" : "closed") } catch (_) {}
+      }
+
+      function toggleSidebar() { sidebarOpen = !sidebarOpen;
+        applySidebarState() }
+      sidebarToggleBtn.addEventListener("click", toggleSidebar);
+
+      function generateId() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 7) }
+
+      function getFilteredNotes() {
+        let filtered = notes;
+        if (searchQuery.trim()) {
+          const q = searchQuery.trim().toLowerCase();
+          filtered = filtered.filter((n) => n.title.toLowerCase().includes(q) || n.content.toLowerCase().includes(q));
+        }
+        return filtered;
+      }
+
+      function loadFromStorage() {
+        try {
+          const raw = localStorage.getItem(STORAGE_KEY);
+          if (raw) {
+            const parsed = JSON.parse(raw);
+            if (parsed.notes && parsed.folders !== undefined) {
+              notes = parsed.notes;
+              folders = parsed.folders;
+              if (parsed.expanded) expandedFolders = new Set(parsed.expanded);
+              if (parsed.fontSize) { currentFontSize = parsed.fontSize;
+                applyFontSize() }
+              return;
+            }
+          }
+        } catch (_) {}
+        const now = Date.now();
+        notes = [{ id: generateId(), title: "Welcome", content: "<h1>Welcome</h1><p>Start writing. Everything stays local.</p><p><input type=\"checkbox\"> Checkboxes work properly now without white borders. <b>Bold</b>, <i>italic</i>, <u>underline</u> too.</p><ul><li>Organize with folders</li><li>Drag notes anywhere</li></ul>", folder: "",  createdAt: now, modifiedAt: now }];
+        folders = [];
+        expandedFolders = new Set();
+      }
+
+      function setSavingStatus(status) {
+        if (status === "saving") { saveStatus.textContent = "saving…";
+          saveStatus.className = "status-save saving";
+          isSaving = true } else if (status === "saved") { saveStatus.textContent = "saved";
+          saveStatus.className = "status-save saved";
+          isSaving = false } else if (status === "error") { saveStatus.textContent = "error";
+          saveStatus.className = "status-save error";
+          isSaving = false }
+      }
+
+      function saveToStorage() {
+        try {
+          const data = { notes, folders, expanded: Array.from(expandedFolders), fontSize: currentFontSize };
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+          setSavingStatus("saved");
+          clearTimeout(saveTimer);
+        } catch (_) { setSavingStatus("error") }
+        renderTree();
+        updateModifiedDisplay();
+      }
+      function scheduleSave() {
+        setSavingStatus("saving");
+        clearTimeout(saveTimer);
+        saveTimer = setTimeout(() => { saveToStorage() }, 600);
+      }
+
+      function updateCounts() {
+        document.getElementById("folderCount").textContent = folders.length;
+        const rootNotesCount = notes.filter(n => !n.folder).length;
+        document.getElementById("noteCount").textContent = rootNotesCount;
+      }
+
+      function renderTree() {
+        const filtered = getFilteredNotes();
+        const isSearching = Boolean(searchQuery.trim());
+        let folderHtml = "";
+        
+        const visibleFolders = folders.filter((folder) => {
+          if (!isSearching) return true;
+          const folderNotes = filtered.filter((n) => n.folder === folder);
+          return folderNotes.length > 0;
+        });
+
+        if (visibleFolders.length === 0) {
+          folderHtml = '<div class="empty-message">No folders</div>';
+        } else {
+          visibleFolders.forEach((folder) => {
+            const folderNotes = filtered.filter((n) => n.folder === folder);
+            const isOpen = isSearching ? true : expandedFolders.has(folder);
+            const toggleIcon = isOpen ? "▾" : "▸";
+            folderHtml += `<div class="folder-item" data-folder="${folder}" draggable="true">`;
+            folderHtml += `<div class="folder-header" onclick="toggleFolder('${folder}')">`;
+            folderHtml += `<span class="folder-toggle">${toggleIcon}</span>`;
+            folderHtml += `<span class="folder-name">${folder}</span>`;
+            folderHtml += `<span class="folder-count">${folderNotes.length}</span>`;
+            folderHtml += `<span class="folder-menu">`;
+            folderHtml += `<button class="dots-btn" onclick="toggleItemMenu(event, 'folder', '${folder}')">⋯</button>`;
+            folderHtml += `<div class="item-dropdown-menu" id="menu-folder-${folder}">`;
+            folderHtml += `<button onclick="renameFolder('${folder}')">Rename</button>`;
+            folderHtml += `<button class="danger" onclick="deleteFolder('${folder}')">Delete</button>`;
+            folderHtml += `</div></span></div>`;
+            folderHtml += `<div class="folder-children ${isOpen ? "open" : ""}" data-folder="${folder}">`;
+            if (folderNotes.length === 0) { folderHtml +=
+                `<div class="empty-message" style="padding:4px 12px; font-size:0.72rem;">Empty</div>` } else {
+              folderNotes.forEach((note) => { folderHtml += renderNoteItem(note) }) }
+            folderHtml += `</div></div>`;
+          });
+        }
+        folderList.innerHTML = folderHtml;
+
+        const noFolderNotes = filtered.filter((n) => !n.folder);
+        let noteHtml = "";
+        if (noFolderNotes.length === 0) {
+          noteHtml = '<div class="empty-message">No notes</div>';
+        } else {
+          noFolderNotes.forEach((note) => { noteHtml += renderNoteItem(note) });
+        }
+        noteList.innerHTML = noteHtml;
+
+        document.querySelectorAll(".note-item").forEach((el) => {
+          el.addEventListener("dragstart", handleNoteDragStart);
+          el.addEventListener("dragend", handleDragEnd);
+          el.addEventListener("dragover", handleDragOver);
+          el.addEventListener("dragleave", handleDragLeave);
+          el.addEventListener("drop", handleDrop);
+        });
+
+        document.querySelectorAll(".folder-item").forEach((el) => {
+          el.addEventListener("dragstart", handleFolderDragStart);
+          el.addEventListener("dragend", handleDragEnd);
+          el.addEventListener("dragover", handleDragOver);
+          el.addEventListener("dragleave", handleDragLeave);
+          el.addEventListener("drop", handleDrop);
+        });
+
+        noteList.addEventListener("dragover", handleDragOver);
+        noteList.addEventListener("dragleave", handleDragLeave);
+        noteList.addEventListener("drop", handleDrop);
+
+        updateCounts();
+      }
+
+      function renderNoteItem(note) {
+        const isActive = currentNoteId === note.id;
+        const timeStr = note.modifiedAt ? formatTime(note.modifiedAt) : "";
+        return `<div class="note-item ${isActive ? "active" : ""}" data-note-id="${note.id}" draggable="true" onclick="switchToNote('${note.id}')"><span class="note-title-text">${note.title || "Untitled"}</span><span class="note-time">${timeStr}</span><span class="note-menu"><button class="dots-btn" onclick="toggleItemMenu(event, 'note', '${note.id}')">⋯</button><div class="item-dropdown-menu" id="menu-note-${note.id}"><button onclick="renameNote(event, '${note.id}')">Rename</button><button onclick="duplicateNote(event, '${note.id}')">Duplicate</button><button class="danger" onclick="deleteNote(event, '${note.id}')">Delete</button></div></span></div>`;
+      }
+
+      window.toggleItemMenu = function(e, type, id) {
+        e.stopPropagation();
+        e.preventDefault();
+        const menuId = `menu-${type}-${id}`;
+        const menu = document.getElementById(menuId);
+        const isShown = menu && menu.classList.contains("show");
+        
+        closeAllItemMenus();
+        
+        if (menu && !isShown) {
+          menu.classList.add("show");
+        }
+      };
+
+      function closeAllItemMenus() {
+        document.querySelectorAll(".item-dropdown-menu.show").forEach(menu => {
+          menu.classList.remove("show");
+        });
+      }
+
+      window.toggleFolder = function(folder) {
+        if (expandedFolders.has(folder)) expandedFolders.delete(folder);
+        else expandedFolders.add(folder);
+        renderTree();
+        saveToStorageSilently();
+      };
+
+      function saveToStorageSilently() {
+        try {
+          const data = { notes, folders, expanded: Array.from(expandedFolders), fontSize: currentFontSize };
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+        } catch (_) {}
+      }
+
+      window.renameFolder = async function(oldName) {
+        closeAllItemMenus();
+        const newName = await showModal("Rename Folder", 'Enter a new name for "' + oldName + '"', oldName, true, false);
+        if (!newName || newName.trim() === oldName) return;
+        const trimmed = newName.trim();
+        if (folders.includes(trimmed)) { 
+          await showModal("Error", 'Folder "' + trimmed + '" already exists.', "", false, false);
+          return;
+        }
+        const index = folders.indexOf(oldName);
+        if (index > -1) {
+          folders[index] = trimmed;
+          notes.forEach((n) => { if (n.folder === oldName) n.folder = trimmed });
+          if (expandedFolders.has(oldName)) { expandedFolders.delete(oldName);
+            expandedFolders.add(trimmed) }
+          scheduleSave();
+        }
+      };
+
+      window.deleteFolder = async function(folder) {
+        closeAllItemMenus();
+        const confirmed = await showModal("Delete Folder", `Are you sure you want to delete "${folder}"? Notes will be moved to the main Notes section.`, "", false, true);
+        if (!confirmed) return;
+        notes.forEach((n) => { if (n.folder === folder) n.folder = "" });
+        const index = folders.indexOf(folder);
+        if (index > -1) folders.splice(index, 1);
+        expandedFolders.delete(folder);
+        scheduleSave();
+      };
+
+      window.switchToNote = function(id) {
+        const note = notes.find((n) => n.id === id);
+        if (!note) return;
+        saveCurrentNoteFromUI();
+        currentNoteId = note.id;
+        noteTitleInput.value = note.title || "";
+        noteContent.innerHTML = note.content || "";
+
+        renderTree();
+        updateCounter();
+        updateModifiedDisplay();
+        setSavingStatus("saved");
+        setTimeout(updateFormatButtons, 50);
+        applyFontToContent();
+        applyFontSize();
+      };
+
+      window.renameNote = async function(e, id) {
+        if (e) { e.stopPropagation(); e.preventDefault(); }
+        closeAllItemMenus();
+        const note = notes.find((n) => n.id === id);
+        if (!note) return;
+        const newTitle = await showModal("Rename Note", 'Enter a new name for "' + note.title + '"', note.title || "", true, false);
+        if (newTitle !== null) { 
+          note.title = newTitle.trim() || "Untitled"; 
+          if (currentNoteId === id) noteTitleInput.value = note.title;
+          scheduleSave();
+        }
+      };
+
+      window.duplicateNote = function(e, id) {
+        if (e) { e.stopPropagation(); e.preventDefault(); }
+        closeAllItemMenus();
+        const original = notes.find((n) => n.id === id);
+        if (!original) return;
+        const now = Date.now();
+        const newNote = { id: generateId(), title: original.title + " (copy)", content: original.content, folder: original
+            .folder,  createdAt: now, modifiedAt: now };
+        notes.push(newNote);
+        scheduleSave();
+        switchToNote(newNote.id);
+      };
+
+      window.deleteNote = async function(e, id) {
+        if (e) { e.stopPropagation(); e.preventDefault(); }
+        closeAllItemMenus();
+        if (notes.length === 1) { 
+          await showModal("Cannot Delete", "You need at least one note.", "", false, false);
+          return;
+        }
+        const note = notes.find((n) => n.id === id);
+        const title = note ? note.title : "this note";
+        const confirmed = await showModal("Delete Note", `Are you sure you want to delete "${title}"?`, "", false, true);
+        if (!confirmed) return;
+        
+        const index = notes.findIndex((n) => n.id === id);
+        if (index === -1) return;
+        notes.splice(index, 1);
+        if (currentNoteId === id) {
+          const nextNote = notes[0] || null;
+          if (nextNote) { currentNoteId = nextNote.id;
+            noteTitleInput.value = nextNote.title || "";
+            noteContent.innerHTML = nextNote.content || "" } else { currentNoteId = null;
+            noteTitleInput.value = "";
+            noteContent.innerHTML = "" }
+        }
+        scheduleSave();
+      };
+
+      function handleNoteDragStart(e) {
+        const item = e.target.closest(".note-item");
+        if (!item) return;
+        e.stopPropagation();
+        draggedType = "note";
+        draggedNoteId = item.dataset.noteId;
+        draggedFolderName = null;
+        item.classList.add("dragging");
+        e.dataTransfer.effectAllowed = "move";
+        e.dataTransfer.setData("text/plain", "note:" + draggedNoteId);
+      }
+
+      function handleFolderDragStart(e) {
+        const item = e.target.closest(".folder-item");
+        if (!item) return;
+        draggedType = "folder";
+        draggedNoteId = null;
+        draggedFolderName = item.dataset.folder;
+        item.classList.add("dragging");
+        e.dataTransfer.effectAllowed = "move";
+        e.dataTransfer.setData("text/plain", "folder:" + draggedFolderName);
+      }
+
+      function handleDragEnd(e) {
+        document.querySelectorAll(".dragging").forEach((el) => el.classList.remove("dragging"));
+        document.querySelectorAll(".drag-over-folder").forEach((el) => el.classList.remove("drag-over-folder"));
+        document.querySelectorAll(".drag-over-section").forEach((el) => el.classList.remove("drag-over-section"));
+        document.querySelectorAll(".folder-item, .note-item").forEach((el) => {
+          el.classList.remove("drop-above", "drop-below");
+        });
+        draggedNoteId = null;
+        draggedFolderName = null;
+        draggedType = null;
+        dropTargetFolder = null;
+        dropTargetNoteId = null;
+        dropPosition = null;
+      }
+
+      function handleDragOver(e) {
+        e.preventDefault();
+        e.dataTransfer.dropEffect = "move";
+
+        const folder = e.target.closest(".folder-item");
+        const targetNote = e.target.closest(".note-item");
+        const notesSection = e.target.closest("#noteList");
+
+        if (draggedType === "note") {
+          document.querySelectorAll(".folder-item, .note-item").forEach((el) => el.classList.remove("drop-above", "drop-below"));
+          
+          if (folder) {
+            document.querySelectorAll(".drag-over-folder").forEach((el) => {
+              if (el !== folder) el.classList.remove("drag-over-folder");
+            });
+            folder.classList.add("drag-over-folder");
+            dropTargetFolder = folder.dataset.folder;
+            dropTargetNoteId = null;
+          } else if (targetNote && targetNote.dataset.noteId !== draggedNoteId) {
+            document.querySelectorAll(".drag-over-folder").forEach((el) => el.classList.remove("drag-over-folder"));
+            const rect = targetNote.getBoundingClientRect();
+            const midpoint = rect.top + rect.height / 2;
+            
+            dropTargetNoteId = targetNote.dataset.noteId;
+            dropTargetFolder = null;
+            if (e.clientY < midpoint) {
+              targetNote.classList.add("drop-above");
+              dropPosition = "above";
+            } else {
+              targetNote.classList.add("drop-below");
+              dropPosition = "below";
+            }
+          } else {
+            document.querySelectorAll(".drag-over-folder").forEach((el) => el.classList.remove("drag-over-folder"));
+            dropTargetFolder = null;
+            dropTargetNoteId = null;
+          }
+
+          if (notesSection && !folder) {
+            notesSection.classList.add("drag-over-section");
+          } else {
+            document.querySelectorAll(".drag-over-section").forEach((el) => el.classList.remove("drag-over-section"));
+          }
+        } else if (draggedType === "folder") {
+          if (folder && folder.dataset.folder !== draggedFolderName) {
+            const rect = folder.getBoundingClientRect();
+            const midpoint = rect.top + rect.height / 2;
+            
+            document.querySelectorAll(".folder-item").forEach((el) => el.classList.remove("drop-above", "drop-below"));
+            
+            dropTargetFolder = folder.dataset.folder;
+            if (e.clientY < midpoint) {
+              folder.classList.add("drop-above");
+              dropPosition = "above";
+            } else {
+              folder.classList.add("drop-below");
+              dropPosition = "below";
+            }
+          }
+        }
+      }
+
+      function handleDragLeave(e) {
+        const folder = e.target.closest(".folder-item");
+        const targetNote = e.target.closest(".note-item");
+        const notesSection = e.target.closest("#noteList");
+
+        if (folder && !folder.contains(e.relatedTarget)) {
+          folder.classList.remove("drag-over-folder", "drop-above", "drop-below");
+        }
+        if (targetNote && !targetNote.contains(e.relatedTarget)) {
+          targetNote.classList.remove("drop-above", "drop-below");
+        }
+        if (notesSection && !notesSection.contains(e.relatedTarget)) {
+          notesSection.classList.remove("drag-over-section");
+        }
+      }
+
+      function handleDrop(e) {
+        e.preventDefault();
+        const folder = e.target.closest(".folder-item");
+        const targetNote = e.target.closest(".note-item");
+        const notesSection = e.target.closest("#noteList");
+
+        document.querySelectorAll(".drag-over-folder").forEach((el) => el.classList.remove("drag-over-folder"));
+        document.querySelectorAll(".drag-over-section").forEach((el) => el.classList.remove("drag-over-section"));
+        document.querySelectorAll(".folder-item, .note-item").forEach((el) => {
+          el.classList.remove("drop-above", "drop-below");
+        });
+
+        if (draggedType === "note") {
+          const noteIndex = notes.findIndex((n) => n.id === draggedNoteId);
+          if (noteIndex > -1) {
+            const note = notes[noteIndex];
+            if (folder) {
+              const targetFolder = folder.dataset.folder;
+              note.folder = targetFolder;
+              expandedFolders.add(targetFolder);
+            } else if (dropTargetNoteId && dropTargetNoteId !== draggedNoteId) {
+              const targetIdx = notes.findIndex((n) => n.id === dropTargetNoteId);
+              if (targetIdx > -1) {
+                note.folder = notes[targetIdx].folder;
+                notes.splice(noteIndex, 1);
+                let newIdx = notes.findIndex((n) => n.id === dropTargetNoteId);
+                if (dropPosition === "below") newIdx++;
+                notes.splice(newIdx, 0, note);
+              }
+            } else if (notesSection) {
+              note.folder = "";
+            }
+            scheduleSave();
+            renderTree();
+          }
+        } else if (draggedType === "folder") {
+          if (dropTargetFolder && dropTargetFolder !== draggedFolderName) {
+            const fromIndex = folders.indexOf(draggedFolderName);
+            let toIndex = folders.indexOf(dropTargetFolder);
+            if (fromIndex > -1 && toIndex > -1) {
+              const newFolders = [...folders];
+              newFolders.splice(fromIndex, 1);
+              if (dropPosition === "below") {
+                toIndex = newFolders.indexOf(dropTargetFolder) + 1;
+              } else {
+                toIndex = newFolders.indexOf(dropTargetFolder);
+              }
+              newFolders.splice(toIndex, 0, draggedFolderName);
+              folders = newFolders;
+              scheduleSave();
+              renderTree();
+            }
+          }
+        }
+
+        draggedNoteId = null;
+        draggedFolderName = null;
+        draggedType = null;
+        dropTargetFolder = null;
+        dropTargetNoteId = null;
+        dropPosition = null;
+      }
+
+      function saveCurrentNoteFromUI() {
+        if (currentNoteId === null) return;
+        const note = notes.find((n) => n.id === currentNoteId);
+        if (!note) return;
+        const title = noteTitleInput.value.trim();
+        note.title = title || "Untitled";
+        note.content = noteContent.innerHTML;
+        note.modifiedAt = Date.now();
+        updateCounter();
+        updateModifiedDisplay();
+        scheduleSave();
+      }
+
+ 
+      function updateFormatButtons() {
+        const cmds = ["bold", "italic", "underline", "strikeThrough", "superscript", "subscript", "justifyLeft",
+          "justifyCenter", "justifyRight", "justifyFull"
+        ];
+        cmds.forEach((cmd) => {
+          const btn = document.querySelector(`[data-cmd="${cmd}"]`);
+          if (btn) {
+            try { const isActive = document.queryCommandState(cmd);
+              btn.classList.toggle("active", isActive) } catch (e) {}
+          }
+        });
+
+        try {
+          const parentBlock = document.queryCommandValue("formatBlock");
+          if (["h1", "h2", "h3"].includes(parentBlock.toLowerCase())) {
+            headingSelect.value = parentBlock.toLowerCase();
+          } else {
+            headingSelect.value = "p";
+          }
+        } catch (e) {}
+        
+        detectSelectionFontSize();
+        detectSelectionColors();
+      }
+
+      function applyFontToContent() {
+        if (currentNoteId) {
+          const note = notes.find((n) => n.id === currentNoteId);
+          if (note && note.fontFamily) { noteContent.style.fontFamily = note.fontFamily;
+            fontFamilySelect.value = note.fontFamily }
+        }
+      }
+
+      function toggleScript(targetTag) {
+        restoreSelection();
+        const sel = window.getSelection();
+        if (!sel || !sel.rangeCount) return;
+
+        const range = sel.getRangeAt(0);
+
+        if (!sel.isCollapsed) {
+          // If text is selected, unwrap or toggle the selection properly
+          let parentElement = sel.anchorNode.nodeType === Node.TEXT_NODE ? sel.anchorNode.parentElement : sel.anchorNode;
+          let activeTag = null;
+
+          while (parentElement && parentElement !== noteContent) {
+            const tagName = parentElement.tagName.toLowerCase();
+            if (tagName === "sup" || tagName === "sub") {
+              activeTag = tagName;
+              break;
+            }
+            parentElement = parentElement.parentElement;
+          }
+
+          if (activeTag === targetTag) {
+            const textNode = document.createTextNode(parentElement.textContent);
+            parentElement.replaceWith(textNode);
+            const newRange = document.createRange();
+            newRange.selectNodeContents(textNode);
+            sel.removeAllRanges();
+            sel.addRange(newRange);
+          } else {
+            if (activeTag) {
+              const textContent = parentElement.textContent;
+              const newElem = document.createElement(targetTag);
+              newElem.textContent = textContent;
+              parentElement.replaceWith(newElem);
+              const newRange = document.createRange();
+              newRange.selectNodeContents(newElem);
+              sel.removeAllRanges();
+              sel.addRange(newRange);
+            } else {
+              const selectedText = range.toString();
+              const elem = document.createElement(targetTag);
+              elem.textContent = selectedText;
+              range.deleteContents();
+              range.insertNode(elem);
+              const newRange = document.createRange();
+              newRange.selectNodeContents(elem);
+              sel.removeAllRanges();
+              sel.addRange(newRange);
+            }
+          }
+        } else {
+          // Cursor typing behavior like Google Docs
+          let parentElement = sel.anchorNode.nodeType === Node.TEXT_NODE ? sel.anchorNode.parentElement : sel.anchorNode;
+          let activeTag = null;
+
+          while (parentElement && parentElement !== noteContent) {
+            const tagName = parentElement.tagName.toLowerCase();
+            if (tagName === "sup" || tagName === "sub") {
+              activeTag = tagName;
+              break;
+            }
+            parentElement = parentElement.parentElement;
+          }
+
+          if (activeTag === targetTag) {
+            // Exit script tag and insert a normal text node right after it for future typing
+            const normalText = document.createTextNode("\u200B");
+            if (parentElement.nextSibling) {
+              parentElement.parentNode.insertBefore(normalText, parentElement.nextSibling);
+            } else {
+              parentElement.parentNode.appendChild(normalText);
+            }
+            const newRange = document.createRange();
+            newRange.setStart(normalText, 1);
+            newRange.setEnd(normalText, 1);
+            sel.removeAllRanges();
+            sel.addRange(newRange);
+          } else if (activeTag) {
+            // Switch script tag (e.g. sub to sup)
+            const newElem = document.createElement(targetTag);
+            newElem.innerHTML = "&#8203;";
+            if (parentElement.nextSibling) {
+              parentElement.parentNode.insertBefore(newElem, parentElement.nextSibling);
+            } else {
+              parentElement.parentNode.appendChild(newElem);
+            }
+            const newRange = document.createRange();
+            newRange.setStart(newElem.firstChild, 1);
+            newRange.setEnd(newElem.firstChild, 1);
+            sel.removeAllRanges();
+            sel.addRange(newRange);
+          } else {
+            // Start script mode at cursor
+            const elem = document.createElement(targetTag);
+            elem.innerHTML = "&#8203;";
+            range.insertNode(elem);
+            const newRange = document.createRange();
+            newRange.setStart(elem.firstChild, 1);
+            newRange.setEnd(elem.firstChild, 1);
+            sel.removeAllRanges();
+            sel.addRange(newRange);
+          }
+        }
+
+        saveSelection();
+        updateCounter();
+        scheduleSave();
+        setTimeout(updateFormatButtons, 50);
+      }
+
+      function execCommand(cmd, value) {
+        if (value === undefined) value = null;
+        
+        if (cmd === "superscript") {
+          toggleScript("sup");
+          return;
+        } else if (cmd === "subscript") {
+          toggleScript("sub");
+          return;
+        }
+
+        restoreSelection();
+        try { document.execCommand(cmd, false, value) } catch (e) {}
+        noteContent.focus();
+        saveSelection();
+        updateCounter();
+        scheduleSave();
+        setTimeout(updateFormatButtons, 50);
+      }
+
+      function insertCheckbox() {
+  restoreSelection();
+  const sel = window.getSelection();
+  if (!sel || !sel.rangeCount) return;
+
+  const range = sel.getRangeAt(0);
+
+  // Create styled checkbox element
+  const checkbox = document.createElement("input");
+  checkbox.type = "checkbox";
+  checkbox.contentEditable = "false";
+
+  // Create explicit non-breaking space for proper cursor separation
+  const space = document.createTextNode("\u00A0");
+
+  range.insertNode(space);
+  range.insertNode(checkbox);
+
+  // Position cursor after the spacing node for standard text height
+  range.setStart(space, 1);
+  range.collapse(true);
+
+  sel.removeAllRanges();
+  sel.addRange(range);
+
+  saveSelection();
+  updateCounter();
+  scheduleSave();
+  noteContent.focus();
+}
+      function insertBulletList() { execCommand("insertUnorderedList") }
+
+      function insertNumberedList() { execCommand("insertOrderedList") }
+
+      function insertCodeBlock() {
+        restoreSelection();
+        const sel = window.getSelection();
+        if (!sel.rangeCount) return;
+        const range = sel.getRangeAt(0);
+        const pre = document.createElement("pre");
+        const code = document.createElement("code");
+        code.textContent = "";
+        pre.appendChild(code);
+        range.insertNode(pre);
+        range.setStartAfter(pre);
+        range.collapse(true);
+        sel.removeAllRanges();
+        sel.addRange(range);
+        noteContent.focus();
+        saveSelection();
+        updateCounter();
+        scheduleSave();
+      }
+
+      function insertBlockquote() { execCommand("formatBlock", "blockquote") }
+
+      function insertHorizontalRule() { execCommand("insertHorizontalRule") }
+
+
+
+      function handleKeyboard(e) {
+  const sel = window.getSelection();
+  if (!sel || !sel.rangeCount || !noteContent.contains(sel.anchorNode)) return;
+
+  const activeElement = sel.anchorNode.nodeType === Node.ELEMENT_NODE 
+    ? sel.anchorNode 
+    : sel.anchorNode.parentElement;
+  
+  const currentLi = activeElement.closest ? activeElement.closest("li") : null;
+
+  // 1. TAB = INDENT (move right)
+  if (e.key === "Tab" && !e.shiftKey) {
+    e.preventDefault();
+    if (currentLi) {
+      document.execCommand("indent", false, null);
+    } else {
+      document.execCommand("insertHTML", false, "&nbsp;&nbsp;&nbsp;&nbsp;");
+    }
+    saveSelection();
+    updateCounter();
+    scheduleSave();
+    return;
+  }
+
+  // 2. SHIFT+TAB = OUTDENT (move left)
+  if (e.key === "Tab" && e.shiftKey) {
+    e.preventDefault();
+    if (currentLi) {
+      document.execCommand("outdent", false, null);
+    }
+    saveSelection();
+    updateCounter();
+    scheduleSave();
+    return;
+  }
+
+  // 3. ENTER KEY HANDLING FOR CHECKLIST
+  if (e.key === "Enter" && !e.shiftKey) {
+    const checkbox = activeElement.querySelector("input[type='checkbox']") || 
+                     (activeElement.previousElementSibling?.tagName === "INPUT" ? activeElement.previousElementSibling : null);
+
+    if (checkbox) {
+      setTimeout(() => {
+        const newSel = window.getSelection();
+        if (!newSel || !newSel.rangeCount) return;
+        
+        const newRange = document.createRange();
+        const newCb = document.createElement("input");
+        newCb.type = "checkbox";
+        newCb.style.marginRight = "8px";
+        newCb.style.verticalAlign = "middle";
+        newCb.contentEditable = "false";
+        
+        const space = document.createTextNode(" ");
+
+        newSel.getRangeAt(0).insertNode(space);
+        newSel.getRangeAt(0).insertNode(newCb);
+
+        newRange.setStartAfter(space);
+        newRange.collapse(true);
+        newSel.removeAllRanges();
+        newSel.addRange(newRange);
+      }, 0);
+    }
+    return;
+  }
+
+  // 4. BACKSPACE AT START OF LINE - DELETE BULLET, KEEP TEXT ON SAME LINE
+  if (e.key === "Backspace") {
+    const range = sel.getRangeAt(0);
+    
+    // Check if we're at the start of a text node inside a list item
+    if (range.isCollapsed && range.startOffset === 0) {
+      let anchor = sel.anchorNode;
+      if (anchor.nodeType === Node.TEXT_NODE) {
+        // Find the parent LI
+        let parent = anchor.parentElement;
+        while (parent && parent.tagName !== "LI") {
+          parent = parent.parentElement;
+        }
+        
+        if (parent && parent.tagName === "LI") {
+          e.preventDefault();
+          e.stopPropagation();
+          
+          // Get the text content
+          const text = parent.textContent;
+          const parentList = parent.parentElement;
+          
+          // Create a new paragraph
+          const p = document.createElement("p");
+          p.textContent = text;
+          
+          // Replace the list item with the paragraph
+          if (parentList.children.length === 1) {
+            // Only item in list - replace the whole list
+            parentList.parentNode.replaceChild(p, parentList);
+          } else {
+            // Insert before the list and remove the item
+            parentList.parentNode.insertBefore(p, parentList);
+            parent.remove();
+            if (parentList.children.length === 0) {
+              parentList.remove();
+            }
+          }
+          
+          // Set cursor at start of the new paragraph
+          const newRange = document.createRange();
+          newRange.setStart(p.firstChild || p, 0);
+          newRange.collapse(true);
+          sel.removeAllRanges();
+          sel.addRange(newRange);
+          
+          saveSelection();
+          updateCounter();
+          scheduleSave();
+          return;
+        }
+      }
+    }
+  }
+}
+      function createNote() {
+        saveCurrentNoteFromUI();
+        const now = Date.now();
+        const newNote = { id: generateId(), title: "New note", content: "", folder: "",
+           createdAt: now, modifiedAt: now };
+        notes.push(newNote);
+        currentNoteId = newNote.id;
+        noteTitleInput.value = newNote.title;
+        noteContent.innerHTML = newNote.content;
+        scheduleSave();
+        noteContent.focus();
+        updateCounter();
+        updateModifiedDisplay();
+        try {
+          const range = document.createRange();
+          range.selectNodeContents(noteContent);
+          range.collapse(false);
+          const sel = window.getSelection();
+          sel.removeAllRanges();
+          sel.addRange(range);
+          saveSelection();
+        } catch (e) {}
+      }
+
+      function createFolder() {
+        let count = 1;
+        let name = "New Folder";
+        while (folders.includes(name)) { count++;
+          name = "New Folder " + count; }
+        folders.push(name);
+        scheduleSave();
+      }
+
+      function openPopoutWindow() {
+  saveCurrentNoteFromUI();
+  const activeNote = notes.find(n => n.id === currentNoteId);
+  if (!activeNote) {
+    alert("No note to popout.");
+    return;
+  }
+
+  // Simple popup window
+  const popup = window.open("", "NotePopout", "width=500,height=600,resizable=yes,scrollbars=yes");
+  if (!popup) {
+    alert("Please allow popups for this site to use the popout feature.");
+    return;
+  }
+  
+  setupPopoutUI(popup, activeNote);
+}
+
+function setupPopoutUI(win, activeNote) {
+  const doc = win.document;
+  doc.title = "📌 " + (activeNote.title || "Note Popout");
+  
+  const isLight = document.documentElement.getAttribute('data-theme') === 'light';
+  
+  doc.head.innerHTML = `
+    <style>
+      body {
+        background: ${isLight ? '#f5efe6' : '#16161e'};
+        color: ${isLight ? '#1a120a' : '#f0f0f4'};
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        margin: 0; 
+        padding: 16px; 
+        display: flex; 
+        flex-direction: column; 
+        height: 100vh;
+        box-sizing: border-box;
+      }
+      .pop-title {
+        font-size: 1.2rem; 
+        font-weight: bold; 
+        border: none; 
+        background: transparent;
+        color: ${isLight ? '#1a120a' : '#f0f0f4'};
+        border-bottom: 1px solid ${isLight ? 'rgba(139, 115, 85, .35)' : 'rgba(255,255,255,.1)'}; 
+        padding: 8px 4px;
+        width: 100%; 
+        outline: none; 
+        margin-bottom: 12px; 
+        font-family: inherit;
+      }
+      .pop-body {
+        flex: 1; 
+        outline: none; 
+        border: 1px solid ${isLight ? 'rgba(139, 115, 85, .35)' : 'rgba(255,255,255,.1)'}; 
+        border-radius: 8px;
+        padding: 12px; 
+        overflow-y: auto; 
+        background: ${isLight ? 'rgba(255,255,255,.5)' : 'rgba(255,255,255,.03)'}; 
+        line-height: 1.6;
+        font-size: 0.95rem;
+        color: ${isLight ? '#1a120a' : '#d0d0d8'};
+        min-height: 200px;
+      }
+      .pop-body:focus {
+        outline: none;
+      }
+    </style>
+  `;
+
+  doc.body.innerHTML = `
+    <input class="pop-title" id="popTitle" value="${activeNote.title || ''}" placeholder="Title..." />
+    <div class="pop-body" id="popBody" contenteditable="true">${activeNote.content || ''}</div>
+  `;
+
+  const popTitle = doc.getElementById("popTitle");
+  const popBody = doc.getElementById("popBody");
+  
+  popBody.focus();
+
+  function syncBack() {
+    if (!win.closed) {
+      const newTitle = popTitle.value.trim() || "Untitled";
+      const newContent = popBody.innerHTML;
+      
+      activeNote.title = newTitle;
+      activeNote.content = newContent;
+      activeNote.modifiedAt = Date.now();
+      
+      noteTitleInput.value = newTitle;
+      noteContent.innerHTML = newContent;
+      
+      scheduleSave();
+    }
+  }
+
+  let syncTimer = null;
+  function debouncedSync() {
+    clearTimeout(syncTimer);
+    syncTimer = setTimeout(syncBack, 300);
+  }
+
+  popTitle.addEventListener("input", debouncedSync);
+  popBody.addEventListener("input", debouncedSync);
+  
+  win.addEventListener('beforeunload', function() {
+    syncBack();
+  });
+}
+
+      function init() {
+        loadTheme();
+        loadSidebarState();
+        loadFromStorage();
+        loadFontSize();
+        if (notes.length) {
+          currentNoteId = notes[0].id;
+          noteTitleInput.value = notes[0].title || "";
+          noteContent.innerHTML = notes[0].content || "";
+          if (notes[0].fontFamily) { noteContent.style.fontFamily = notes[0].fontFamily;
+            fontFamilySelect.value = notes[0].fontFamily }
+        }
+        renderTree();
+
+        updateCounter();
+        updateModifiedDisplay();
+        applyFontSize();
+        
+        const createBtn = document.getElementById("createBtn"),
+          dropdown = document.getElementById("createDropdown");
+        createBtn.addEventListener("click", () => { dropdown.classList.toggle("show") });
+        document.querySelectorAll("#createDropdown button").forEach((btn) => {
+          btn.addEventListener("click", (e) => {
+            const action = e.currentTarget.dataset.action;
+            dropdown.classList.remove("show");
+            if (action === "note") createNote();
+            else if (action === "folder") createFolder();
+          });
+        });
+
+        document.addEventListener("click", (e) => {
+          if (!e.target.closest(".create-dropdown")) dropdown.classList.remove("show");
+          if (!e.target.closest(".dots-btn") && !e.target.closest(".item-dropdown-menu")) {
+            closeAllItemMenus();
+          }
+        });
+
+        document.querySelectorAll(".format-toolbar button[data-cmd]").forEach((btn) => {
+          btn.addEventListener("click", (e) => {
+            e.preventDefault();
+            const cmd = btn.dataset.cmd;
+            execCommand(cmd);
+          });
+        });
+
+
+        fontFamilySelect.addEventListener("change", (e) => {
+          const font = e.target.value;
+          execCommand("fontName", font);
+          if (currentNoteId) {
+            const note = notes.find((n) => n.id === currentNoteId);
+            if (note) note.fontFamily = font;
+          }
+        });
+
+        document.getElementById("fontSizeIncrease").addEventListener("click", (e) => {
+          e.preventDefault();
+          changeFontSize(1);
+        });
+
+        document.getElementById("fontSizeDecrease").addEventListener("click", (e) => {
+          e.preventDefault();
+          changeFontSize(-1);
+        });
+
+        const colorBtn = document.getElementById("colorBtn"),
+          colorDropdown = document.getElementById("colorDropdown"),
+          highlightBtn = document.getElementById("highlightBtn"),
+          highlightDropdown = document.getElementById("highlightDropdown");
+
+        colorBtn.addEventListener("click", (e) => {
+          e.stopPropagation();
+          colorDropdown.classList.toggle("show");
+          highlightDropdown.classList.remove("show");
+        });
+
+        highlightBtn.addEventListener("click", (e) => {
+          e.stopPropagation();
+          highlightDropdown.classList.toggle("show");
+          colorDropdown.classList.remove("show");
+        });
+
+        colorDropdown.querySelectorAll(".color-swatch").forEach((swatch) => {
+          swatch.addEventListener("click", (e) => {
+            e.stopPropagation();
+            const color = swatch.dataset.color;
+            execCommand("foreColor", color);
+            colorDropdown.classList.remove("show");
+          });
+        });
+
+        highlightDropdown.querySelectorAll(".color-swatch").forEach((swatch) => {
+          swatch.addEventListener("click", (e) => {
+            e.stopPropagation();
+            const color = swatch.dataset.color;
+            execCommand("hiliteColor", color);
+            highlightDropdown.classList.remove("show");
+          });
+        });
+
+        const alignBtn = document.getElementById("alignBtn"),
+          alignDropdown = document.getElementById("alignDropdown");
+
+        alignBtn.addEventListener("click", (e) => {
+          e.stopPropagation();
+          alignDropdown.classList.toggle("show");
+        });
+
+        alignDropdown.querySelectorAll("button").forEach((btn) => {
+          btn.addEventListener("click", (e) => {
+            e.stopPropagation();
+            const cmd = btn.dataset.cmd;
+            execCommand(cmd);
+            alignDropdown.classList.remove("show");
+          });
+        });
+
+        const listDropdownBtn = document.getElementById("listDropdownBtn"),
+          listDropdown = document.getElementById("listDropdown");
+
+        listDropdownBtn.addEventListener("click", (e) => {
+          e.stopPropagation();
+          listDropdown.classList.toggle("show");
+        });
+
+        document.getElementById("bulletListOption").addEventListener("click", (e) => {
+          e.stopPropagation();
+          insertBulletList();
+          listDropdown.classList.remove("show");
+        });
+
+        document.getElementById("numberedListOption").addEventListener("click", (e) => {
+          e.stopPropagation();
+          insertNumberedList();
+          listDropdown.classList.remove("show");
+        });
+
+        document.getElementById("checkboxOption").addEventListener("click", (e) => {
+          e.stopPropagation();
+          insertCheckbox();
+          listDropdown.classList.remove("show");
+        });
+
+        document.getElementById("blockquoteBtn").addEventListener("click", (e) => {
+          e.preventDefault();
+          insertBlockquote();
+        });
+
+        document.getElementById("codeBlockBtn").addEventListener("click", (e) => {
+          e.preventDefault();
+          insertCodeBlock();
+        });
+
+        document.getElementById("hrBtn").addEventListener("click", (e) => {
+          e.preventDefault();
+          insertHorizontalRule();
+        });
+
+
+
+        document.addEventListener("click", () => {
+          colorDropdown.classList.remove("show");
+          highlightDropdown.classList.remove("show");
+          alignDropdown.classList.remove("show");
+          listDropdown.classList.remove("show");
+        });
+
+        noteTitleInput.addEventListener("input", saveCurrentNoteFromUI);
+        noteContent.addEventListener("input", saveCurrentNoteFromUI);
+        noteContent.addEventListener("keyup", saveSelection);
+        noteContent.addEventListener("mouseup", saveSelection);
+        noteContent.addEventListener("selectionchange", updateFormatButtons);
+        // Trigger real-time counter updates on typing, pasting, or cutting
+noteContent.addEventListener("input", updateCounter);
+noteContent.addEventListener("keyup", updateCounter);
+noteContent.addEventListener("paste", () => setTimeout(updateCounter, 10));
+
+
+        searchBox.addEventListener("input", (e) => {
+          searchQuery = e.target.value;
+          renderTree();
+        });
+
+        document.getElementById("exportAllBtn").addEventListener("click", () => {
+          const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify({ notes, folders }, null, 2));
+          const dlAnchor = document.createElement("a");
+          dlAnchor.setAttribute("href", dataStr);
+          dlAnchor.setAttribute("download", "void_notes_backup.json");
+          document.body.appendChild(dlAnchor);
+          dlAnchor.click();
+          dlAnchor.remove();
+        });
+
+        document.getElementById("clearAllBtn").addEventListener("click", async () => {
+          const confirmed = await showModal("Clear All Data", "Are you sure? This will delete all notes and folders permanently.", "", false, true);
+          if (confirmed) {
+            notes = [];
+            folders = [];
+            expandedFolders.clear();
+            const now = Date.now();
+            notes.push({ id: generateId(), title: "Welcome", content: "<p>All cleared!</p>", folder: "",  createdAt: now, modifiedAt: now });
+            currentNoteId = notes[0].id;
+            noteTitleInput.value = notes[0].title;
+            noteContent.innerHTML = notes[0].content;
+            scheduleSave();
+          }
+        });
+
+        document.getElementById("popoutBtn").addEventListener("click", openPopoutWindow);
+        document.addEventListener("keydown", handleKeyboard);
+      }
+
+      init();
+    })();
+  </script>
+</body>
+</html>
