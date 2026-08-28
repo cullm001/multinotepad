@@ -30,7 +30,7 @@ A free and private online notepad that works right in your browser. Create multi
 
 ## Live Demo
 
-Visit: https://multinotepad.js.org
+Visit: multinotepad.pages.dev
 
 ## Technologies Used
 
@@ -46,6 +46,6 @@ MultiNotePad stores all data locally in your browser's LocalStorage. No data is 
 
 ## Credits
 
-Domain provided by JS.org — https://js.org
+Domain provided by Cloudflare Pages 
 
-Icons by Lucide — https://lucide.dev
+Icons by Lucide 
