@@ -35,10 +35,10 @@ Visit: https://multinotepad.js.org
 ## Technologies Used
 
 - HTML5
-- CSS3 (Custom properties for theming)
-- Vanilla JavaScript (No frameworks)
+- CSS3 
+- Vanilla JavaScript
 - LocalStorage API
-- Lucide Icons
+
 
 ## Privacy Statement
 
