@@ -1,5 +1,8 @@
 # MultiNotePad
 <img width="1440" height="778" alt="Screenshot 2026-08-28 at 2 16 26 AM" src="https://github.com/user-attachments/assets/f91b6418-1458-4e6e-b6a8-dc87720e55ce" />
+
+Visit: [multinotepad.pages.dev](https://multinotepad.pages.dev)
+
 A free and private online notepad that works right in your browser. Create multiple notes, organize them into folders, and format your text — all without creating an account.
 
 ## Features
@@ -28,9 +31,6 @@ A free and private online notepad that works right in your browser. Create multi
 - No account needed — Just open the page and start writing
 - Persistent storage — Notes survive browser restarts
 
-## Live Demo
-
-Visit: multinotepad.pages.dev
 
 ## Technologies Used
 
