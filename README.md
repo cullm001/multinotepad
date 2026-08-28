@@ -1,6 +1,6 @@
 # MultiNotePad
-
-A free, private, and powerful online notepad that works right in your browser. Create multiple notes, organize them into folders, and format your text — all without creating an account.
+<img width="1440" height="778" alt="Screenshot 2026-08-28 at 2 16 26 AM" src="https://github.com/user-attachments/assets/f91b6418-1458-4e6e-b6a8-dc87720e55ce" />
+A free and private online notepad that works right in your browser. Create multiple notes, organize them into folders, and format your text — all without creating an account.
 
 ## Features
 
