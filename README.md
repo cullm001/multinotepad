@@ -47,4 +47,5 @@ MultiNotePad stores all data locally in your browser's LocalStorage. No data is 
 ## Credits
 
 Domain provided by JS.org — https://js.org
+
 Icons by Lucide — https://lucide.dev
