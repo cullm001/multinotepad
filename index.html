@@ -139,6 +139,20 @@
       gap: 10px;
       align-items: center;
     }
+    /* Hide scrollbar for Chrome, Safari, and Opera */
+.editor::-webkit-scrollbar,
+.editor-wrapper::-webkit-scrollbar,
+.note-content::-webkit-scrollbar {
+  display: none !important;
+}
+
+/* Hide scrollbar for Firefox, IE, and Edge */
+.editor,
+.editor-wrapper,
+.note-content {
+  -ms-overflow-style: none !important;  /* IE and Edge */
+  scrollbar-width: none !important;  /* Firefox */
+}
     .theme-toggle {
       background: var(--bg-hover);
       border: 1px solid var(--border-soft);
