@@ -1245,15 +1245,15 @@ ol ol, ul ol, ol ul {
   border: 1px solid rgba(74, 138, 74, .25) !important;
 }
     
-    .editor-wrapper {
+.editor-wrapper {
   position: relative;
   flex: 1;
   display: flex;
   flex-direction: column;
-  min-height: 600px; /* Allow flex shrinking */
-  height: 100%; /* Take full height of parent */
-  overflow: hidden; /* Prevents wrapper from expanding */
-  background: var(--bg-wrapper); /* Add this */
+  min-height: 600px;
+  height: 100%;
+  overflow-y: auto;
+  background: var(--bg-wrapper);
   transition: background .35s ease; 
 }
 
@@ -1290,7 +1290,7 @@ ol ol, ul ol, ol ul {
       stroke-linejoin: round;
     }
 
-    .note-content {
+.note-content {
   flex: 1;
   min-height: 300px;
   height: auto;
@@ -1305,8 +1305,7 @@ ol ol, ul ol, ol ul {
   color: var(--text-secondary);
   transition: background .35s ease, border-color .35s ease;
   scroll-behavior: smooth;
-  overflow-y: auto; /* THIS enables scrolling */
-  max-height: 600px; /* Prevents unlimited growth */
+  overflow-y: visible; /* Updated from overflow-y: auto */
 }
     .note-content:focus {
       outline: none !important;
