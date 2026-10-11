@@ -11,18 +11,18 @@
       box-sizing: border-box;
     }
     body {
-      background: #0d0d12;
-      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, sans-serif;
-      height: 100vh;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      padding: 0;
-      margin: 0;
-      color: #f0f0f4;
-      transition: background .35s ease, color .35s ease;
-      overflow: hidden;
-    }
+  background: #0d0d12;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, sans-serif;
+  min-height: 100vh; /* CHANGED from height: 100vh */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 0;
+  margin: 0;
+  color: #f0f0f4;
+  transition: background .35s ease, color .35s ease;
+  overflow-x: hidden; /* CHANGED from overflow: hidden */
+}
     :root {
       --bg-body: #0d0d12;
       --bg-app: #16161e;
@@ -79,18 +79,18 @@
       --accent-danger-hover: #a03838;
     }
     .app {
-      width: 100vw;
-      height: 100vh;
-      max-height: 100vh;
-      background: var(--bg-app);
-      display: flex;
-      flex-direction: column;
-      overflow: hidden;
-      border-radius: 0;
-      box-shadow: none;
-      position: relative;
-      transition: background .35s ease, border-color .35s ease;
-    }
+  width: 100vw;
+  min-height: 100vh; /* CHANGED from height: 100vh */
+  height: auto;       /* ADDED */
+  background: var(--bg-app);
+  display: flex;
+  flex-direction: column;
+  overflow: visible;  /* CHANGED from overflow: hidden */
+  border-radius: 0;
+  box-shadow: none;
+  position: relative;
+  transition: background .35s ease, border-color .35s ease;
+}
     .app-header {
       padding: 16px 28px;
       border-bottom: 1px solid var(--border-soft);
@@ -255,13 +255,14 @@ html:not([data-theme="light"]) .status-save.saved,
       border-color: rgba(184, 74, 74, .3);
       color: var(--accent-danger-hover);
     }
-.main-area {
+    .main-area {
   display: flex;
-  flex: 1;
-  min-height: 0;
+  align-items: stretch; /* <--- Forces sidebar height to match .editor height */
+  min-height: 100vh;
+  height: auto; /* <--- Prevents clipping at viewport height */
   background: var(--bg-app);
   position: relative;
-  overflow: hidden; /* Prevents whole-page scrolling */
+  overflow-y: auto !important; /* Single scrollbar on far-right window edge */
   transition: background .35s ease;
 }
 
@@ -276,6 +277,8 @@ html:not([data-theme="light"]) .status-save.saved,
   box-sizing: border-box;
   position: relative;
   z-index: 10;
+  align-self: stretch; /* ADDED: Forces sidebar background to stretch with content */
+  min-height: 100%;    /* ADDED */
   
   /* Smooth hardware-accelerated collapse */
   transition: transform var(--transition-speed) cubic-bezier(0.4, 0, 0.2, 1),
@@ -301,7 +304,10 @@ html:not([data-theme="light"]) .status-save.saved,
   opacity: 0;
   pointer-events: none;
 }
-
+.sidebar {
+  height: auto;
+  align-self: stretch;
+}
 .sidebar-toggle-btn {
   position: absolute;
   left: var(--sidebar-width);
@@ -805,7 +811,7 @@ html:not([data-theme="light"]) .status-save.saved,
     }
 .editor {
   height: 100%;
-  overflow-y: auto !important; /* Single scrollbar pinned to screen edge */
+  overflow: visible !important; /* Single scrollbar pinned to screen edge */
   flex: 1;
   display: flex;
   flex-direction: column;
@@ -1249,7 +1255,7 @@ ol ol, ul ol, ol ul {
   flex: 1;
   display: flex;
   flex-direction: column;
-  min-height: 0;
+  min-height: 600px;
   height: 100%;
   overflow-y: auto !important; /* Text area scrolls properly inside box */
   background: transparent;
@@ -1294,7 +1300,7 @@ ol ol, ul ol, ol ul {
 
 .note-content {
   flex: 1;
-  min-height: 300px;
+  min-height: 500px;
   height: auto;
   width: 100%;
   padding: 16px 20px;
@@ -2072,7 +2078,7 @@ ol ol, ul ol, ol ul {
         </div>
 
         <div class="info-section" id="infoSection">
-          <h2>✍️ About MultiNotepad</h2>
+          <h2>About MultiNotepad</h2>
           <p><strong>MultiNotepad</strong> is a free online notepad that works right in your browser. No account needed — just open the page and start writing.</p>
           
           <p><strong>Multiple Notes & Folders</strong> — Create unlimited notes and organize them into folders. Drag and drop to reorder or move notes between folders. Search across all your content and track when each note was last edited.</p>
