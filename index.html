@@ -309,9 +309,9 @@ html:not([data-theme="light"]) .status-save.saved,
   align-self: stretch;
 }
 .sidebar-toggle-btn {
-  position: absolute;
+  position: fixed; /* Pins button to the screen viewport instead of the tall page */
   left: var(--sidebar-width);
-  top: 50%;
+  top: 50vh; /* Keeps it perfectly centered in the visible window */
   transform: translateY(-50%);
   width: 26px;
   height: 60px;
@@ -809,9 +809,11 @@ html:not([data-theme="light"]) .status-save.saved,
       font-style: italic;
       transition: color .35s ease;
     }
+/* 1. Editor fills the right pane without squeezing itself */
 .editor {
-  height: 100%;
-  overflow: visible !important; /* Single scrollbar pinned to screen edge */
+  height: auto;
+  min-height: 100vh;
+  overflow: visible !important;
   flex: 1;
   display: flex;
   flex-direction: column;
@@ -820,21 +822,42 @@ html:not([data-theme="light"]) .status-save.saved,
   background: var(--bg-editor);
   position: relative;
   width: 100%;
-  /* Removed max-width/margin so scrollbar touches window edge */
-  
-  /* Synchronize transition properties with the sidebar curve and speed */
-  transition: max-width var(--transition-speed) cubic-bezier(0.4, 0, 0.2, 1),
-              padding var(--transition-speed) cubic-bezier(0.4, 0, 0.2, 1), 
-              margin var(--transition-speed) cubic-bezier(0.4, 0, 0.2, 1),
-              flex var(--transition-speed) cubic-bezier(0.4, 0, 0.2, 1),
+  max-width: none !important; /* <--- REMOVE the max-width off .editor */
+  margin: 0 !important;
+
+  transition: padding var(--transition-speed) cubic-bezier(0.4, 0, 0.2, 1),
               background .35s ease;
-  will-change: max-width, padding, margin;
 }
-/* Keeps layout steady during open and close transitions */
+
+/* 2. Constrain the workspace elements cleanly */
+.editor-top,
+.format-toolbar,
+.editor-wrapper,
+.info-section {
+  width: 100%;
+  max-width: 1200px !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
+}
+
+/* 3. Keep editor-wrapper flexible */
+.editor-wrapper {
+  position: relative;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 600px;
+  height: 100%;
+  overflow: visible !important;
+  background: transparent;
+  transition: background .35s ease; 
+}
+
+/* Keeps the editor layout smooth when sidebar collapses without sudden margin snaps */
 .manager.closed ~ .editor {
-  max-width: 1200px;
-  margin: 0 auto;
-} 
+  max-width: none !important;
+  margin: 0;
+}
 /* Nested ordered list items switch to bullets when indented */
 ol ol, ul ol, ol ul {
   list-style-type: disc !important;
@@ -1249,21 +1272,7 @@ ol ol, ul ol, ol ul {
     html:not([data-theme="light"]) .status-save.saved {
   border: 1px solid rgba(74, 138, 74, .25) !important;
 }
-    
-.editor-wrapper {
-  position: relative;
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  min-height: 600px;
-  height: 100%;
-  overflow-y: auto !important; /* Text area scrolls properly inside box */
-  background: transparent;
-  transition: background .35s ease; 
-  width: 100%;
-  max-width: 1200px; /* Keeps text centered */
-  margin: 0 auto;
-}
+
 
     .popout-top-right-btn {
       position: absolute;
