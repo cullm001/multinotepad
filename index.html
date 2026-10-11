@@ -261,7 +261,7 @@ html:not([data-theme="light"]) .status-save.saved,
   min-height: 0;
   background: var(--bg-app);
   position: relative;
-  overflow-y: auto !important; /* Moves scrollbar to far right edge of main area */
+  overflow: hidden; /* Prevents whole-page scrolling */
   transition: background .35s ease;
 }
 
@@ -803,11 +803,9 @@ html:not([data-theme="light"]) .status-save.saved,
       font-style: italic;
       transition: color .35s ease;
     }
-/* Optimized Editor Layout and Transitions */
 .editor {
-  height: auto;
-  min-height: 100%;
-  overflow: visible !important; /* Disables inner container scrollbar */
+  height: 100%;
+  overflow-y: auto !important; /* Single scrollbar pinned to screen edge */
   flex: 1;
   display: flex;
   flex-direction: column;
@@ -816,8 +814,7 @@ html:not([data-theme="light"]) .status-save.saved,
   background: var(--bg-editor);
   position: relative;
   width: 100%;
-  max-width: 1200px;
-  margin: 0 auto;
+  /* Removed max-width/margin so scrollbar touches window edge */
   
   /* Synchronize transition properties with the sidebar curve and speed */
   transition: max-width var(--transition-speed) cubic-bezier(0.4, 0, 0.2, 1),
@@ -1253,10 +1250,13 @@ ol ol, ul ol, ol ul {
   display: flex;
   flex-direction: column;
   min-height: 0;
-  height: auto;
-  overflow: visible !important;
+  height: 100%;
+  overflow-y: auto !important; /* Text area scrolls properly inside box */
   background: transparent;
   transition: background .35s ease; 
+  width: 100%;
+  max-width: 1200px; /* Keeps text centered */
+  margin: 0 auto;
 }
 
     .popout-top-right-btn {
@@ -1294,7 +1294,7 @@ ol ol, ul ol, ol ul {
 
 .note-content {
   flex: 1;
-  min-height: 100%;
+  min-height: 300px;
   height: auto;
   width: 100%;
   padding: 16px 20px;
@@ -1307,8 +1307,8 @@ ol ol, ul ol, ol ul {
   color: var(--text-secondary);
   transition: background .35s ease, border-color .35s ease;
   scroll-behavior: smooth;
-  overflow-y: visible !important;
-  max-height: none !important;
+  overflow-y: auto !important; /* Content scrolls cleanly inside box */
+  max-height: calc(100vh - 220px) !important; /* Dynamically fits screen height */
 }
     .note-content:focus {
       outline: none !important;
